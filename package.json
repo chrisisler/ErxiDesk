@@ -1,0 +1,22 @@
+{
+  "name": "erxidesk",
+  "version": "1.0.0",
+  "description": "your computer at your fingertips",
+  "main": "main.js",
+  "dependencies": {
+    "ramda": "^0.22.1"
+  },
+  "devDependencies": {
+    "electron": "^1.4.6"
+  },
+  "scripts": {
+      "start": "electron src/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [],
+  "author": "chris isler",
+  "license": "ISC"
+}
