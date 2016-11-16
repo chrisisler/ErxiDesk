@@ -72,7 +72,7 @@ function getProcesses()
 
     return pipeline(processes);
 }
-console.log(getProcesses());
+
 module.exports =
 {
     getProcesses,

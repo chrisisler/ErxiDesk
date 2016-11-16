@@ -6,6 +6,7 @@ Processes:
 
     Sorting:
 
+        -- Kindof complete.
         Click on a property title (like 'Process ID') to sort each process by that
         property.
 
@@ -30,3 +31,7 @@ Processes:
     Highlighting:
 
         When hover column title, do smoother transition like when hover a process (row).
+
+CSS:
+
+    Remove text highlighting on double clicking a property column title.
