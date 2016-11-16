@@ -1,2 +1,8 @@
 fonts
 node_modules
+
+src/sass/.sass-cache
+src/sass/*.css.map
+src/sass/*.css
+src/sass/materialize*
+src/sass/components
