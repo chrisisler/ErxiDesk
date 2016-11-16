@@ -36,13 +36,14 @@ function createWindow()
     // Automatically open Chromium DevTools.
     // win.webContents.openDevTools();
 
-    // Event emitted when window is closed.
+    // When the window is closed, dereference the window
+    // object for garbage collection
     win.on('closed', () =>
     {
-        // Deference window object for garbage collection.
         win = null;
     });
 }
 
+// WHen the app is ready, display the window.
 app.on('ready', createWindow);
 

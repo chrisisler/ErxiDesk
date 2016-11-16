@@ -1,0 +1,19 @@
+Sorting:
+
+    Click on a property title (like 'Process ID') to sort each process by that
+    property.
+
+    By default, processes should be sorted by memory usage.
+
+Searching:
+
+    There should exist a magnifying glass icon that, when clicked, displays a
+    search bar. In this search bar, users can type in the name of a process,
+    and that process should (and any of it's duplicates) should be shown (sorted
+    by memory usage first).
+
+Selection:
+
+    Users should be able to right-click on the process-header -> show a menu
+    that allows users to hide certain columns.
+
