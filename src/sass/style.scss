@@ -1,0 +1,43 @@
+@charset "UTF-8";
+
+/**
+ * This file contains Sassy CSS for index.html.
+ */
+
+@import "components/color";
+
+/**
+ * ( TODO: Move global styles into global.scss )
+ * Global Styles
+ */
+
+html
+{
+    font-weight: 300;
+}
+
+.body-wrap
+{
+    @extend .blue-grey, .darken-4;
+    @extend .blue-grey-text, .text-lighten-3;
+}
+
+/**
+ * ( TODO: Move processes styles into processes.scss )
+ * Processes Styles
+ */
+
+.process-data
+{
+    &:hover
+    {
+        @extend .blue-grey, .darken-3;
+        @extend .blue-grey-text, .text-lighten-5;
+    }
+}
+
+thead
+{
+    border-bottom-color: color("blue-grey", "darken-3");
+}
+
