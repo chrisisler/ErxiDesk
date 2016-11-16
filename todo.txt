@@ -26,3 +26,7 @@ Processes:
     Display:
 
         Show total number of processes (rows) being displayed.
+
+    Highlighting:
+
+        When hover column title, do smoother transition like when hover a process (row).

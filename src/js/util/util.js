@@ -14,9 +14,12 @@
  * @param {Object} object - Object to iterate.
  * @param {Function} func - Function to call with each pass.
  */
-function objectMap(object, func)
+function objectForEach(object, func)
 {
-    if (!object || !func) return;
+    if (!object || !func)
+    {
+        console.error('Error: objectForEach() -> Insufficient params.');
+    }
 
     let index = 0;
     for (let key in object)
@@ -30,7 +33,33 @@ function objectMap(object, func)
     }
 }
 
+/**
+ * Given a specified <jQueryElement>, call the specified <func>
+ * on the element, after verifying that that element was
+ * actually clicked.
+ *
+ * @param {Object} jQueryElement - Something like `$('div.input-wrap')`
+ * @param {Function} func - Function to call on clicked DOM object.
+ */
+function whenClicked(jQueryElement, func)
+{
+    if (!jQueryElement || !func)
+    {
+        console.error('Error: whenClicked() -> Insufficient params.');
+    }
+
+    jQueryElement.on('click', () =>
+    {
+        if ($(this).data('clicked', true))
+        {
+            const clickedObject = event.target;
+            func(clickedObject);
+        }
+    });
+}
+
 module.exports =
 {
-    objectMap
+    objectForEach,
+    whenClicked
 };

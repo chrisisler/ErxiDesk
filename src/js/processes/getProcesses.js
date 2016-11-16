@@ -9,8 +9,7 @@ const R = require('ramda');
 const CP = require('child_process');
 const OS = require('os');
 
-const propsToShow = [ 'name', 'pid', 'sessionName', 'sessionNumber', 'memoryUsage' ];
-// const propsToShow = [ 'name', 'pid', 'memoryUsage' ];
+const PROCESS_PROPERTY_KEYS = [ 'name', 'pid', 'sessionName', 'sessionNumber', 'memoryUsage' ];
 
 // Convert `tasklist` output to an array of strings.
 const getProcessesAsArrays = R.pipe(
@@ -24,26 +23,28 @@ const getProcessesAsObjects = R.pipe(
         const processAsObject = {};
         processAsArray.forEach((processValue, index, array) =>
         {
-            // In <propsToShow>, the elements are ordered the same as the column
+            // In <PROCESS_PROPERTY_KEYS>, the elements are ordered the same as the column
             // headers when executing the `tasklist` command on a Windows machine.
             // These names are used as keys to convert each process from a list
             // of values to an object with key-value pairs.
-            processAsObject[propsToShow[index]] = processValue;
+            processAsObject[PROCESS_PROPERTY_KEYS[index]] = processValue;
         });
         return processAsObject;
     })
 );
 
-// Convert process.pid from (string) '8442' to (int) 8442.
-const convertPidStringToInt = R.pipe(
+// Convert process.pid from (string) '8442' to (number) 8442.
+// Also convert process.sessionNumber to a number.
+const convertPidAndSessionNumberToInt = R.pipe(
     R.map((process) =>
     {
         process.pid = Number.parseInt(process.pid);
+        process.sessionNumber = Number.parseInt(process.sessionNumber);
         return process;
     })
 );
 
-// Convert process.memoryUsage from (string) '38,723 K' to 38723 (int).
+// Convert process.memoryUsage from (string) '38,723 K' to 38723 (number).
 const convertMemoryUsageToInt = R.pipe(
     R.map((process) =>
     {
@@ -55,6 +56,7 @@ const convertMemoryUsageToInt = R.pipe(
     })
 );
 
+// Ramda is pretty fucking clean.
 function getProcesses()
 {
     // Get output from `tasklist` command as one big string.
@@ -64,16 +66,16 @@ function getProcesses()
     const pipeline = R.pipe(
         getProcessesAsArrays,
         getProcessesAsObjects,
-        convertPidStringToInt,
+        convertPidAndSessionNumberToInt,
         convertMemoryUsageToInt
     );
 
     return pipeline(processes);
 }
-
+console.log(getProcesses());
 module.exports =
 {
     getProcesses,
-    propsToShow
+    PROCESS_PROPERTY_KEYS
 };
 

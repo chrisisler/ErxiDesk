@@ -16,7 +16,7 @@ html
     font-weight: 300;
 }
 
-.body-wrap
+.css-body-wrap
 {
     @extend .blue-grey, .darken-4;
     @extend .blue-grey-text, .text-lighten-3;
@@ -27,12 +27,26 @@ html
  * Processes Styles
  */
 
-.process-data
+@mixin highlight()
+{
+    @extend .blue-grey, .darken-3;
+    @extend .blue-grey-text, .text-lighten-5;
+}
+
+.css-process-data
 {
     &:hover
     {
-        @extend .blue-grey, .darken-3;
-        @extend .blue-grey-text, .text-lighten-5;
+        @include highlight();
+    }
+}
+
+.css-process-header-title
+{
+    &:hover
+    {
+        cursor: pointer;
+        @include highlight();
     }
 }
 
