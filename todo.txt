@@ -1,37 +1,8 @@
-Icon:
-
-    Make icon background transparent.
-
-Processes:
-
-    Sorting:
-
-        -- Kindof complete.
-        Click on a property title (like 'Process ID') to sort each process by that
-        property.
-
-        By default, processes should be sorted by memory usage.
-
-    Searching:
-
-        There should exist a magnifying glass icon that, when clicked, displays a
-        search bar. In this search bar, users can type in the name of a process,
-        and that process should (and any of it's duplicates) should be shown (sorted
-        by memory usage first).
-
-    Selection:
-
-        Users should be able to right-click on the process-header -> show a menu
-        that allows users to hide certain columns.
-
-    Display:
-
-        Show total number of processes (rows) being displayed.
-
-    Highlighting:
-
-        When hover column title, do smoother transition like when hover a process (row).
-
-CSS:
-
-    Remove text highlighting on double clicking a property column title.
+- Make icon background transparent.
+- Search bar for processes.
+- Abillity hide columns somehow.
+- Show total number of processes/rows displayed.
+- Add delay to hover highlight on process property headers.
+- Right-click a process -> menu displays options:
+  - Kill `${processName}` (PID: 6904)
+  - Kill all `${processName}` (4)

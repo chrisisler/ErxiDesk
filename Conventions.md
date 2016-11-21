@@ -2,7 +2,9 @@ Conventions
 ===========
 
 * Vertical space is a lovely thing
-* HTML/CSS classes prepended with `js-` are for JS, not CSS.
+* HTML/CSS classes prepended with `js-` are for JS, not CSS
+* Similarly, HTML/CSS classes prepended with `css-` are, you guessed, only for CSS
+* HTML/CSS classes not prefixed with `js-` or `css-` are from Materialize
 
 HTML
 ----

@@ -17,6 +17,7 @@ const getProcessesAsArrays = R.pipe(
     R.map(process => JSON.parse('[' + process + ']'))
 );
 
+// Input from <getProcessesAsArrays()>.
 const getProcessesAsObjects = R.pipe(
     R.map(processAsArray =>
     {
@@ -38,22 +39,43 @@ const getProcessesAsObjects = R.pipe(
 const convertPidAndSessionNumberToInt = R.pipe(
     R.map((process) =>
     {
-        process.pid = Number.parseInt(process.pid);
-        process.sessionNumber = Number.parseInt(process.sessionNumber);
+        // if (!!process.pid && !!process.sessionNumber)
+        // {
+            process.pid = Number.parseInt(process.pid);
+            process.sessionNumber = Number.parseInt(process.sessionNumber);
+        // }
         return process;
     })
 );
 
 // Convert process.memoryUsage from (string) '38,723 K' to 38723 (number).
 const convertMemoryUsageToInt = R.pipe(
-    R.map((process) =>
+    R.forEach((process) =>
     {
-        let memUse = process.memoryUsage ? process.memoryUsage : '';
+        let memUse = process.memoryUsage;
         memUse = memUse.substr(0, memUse.length - 2);  // Remove ' K'.
         memUse = memUse.replace(/,/, '')               // Remove ','.
         process.memoryUsage = Number.parseInt(memUse); // String to Integer.
-        return process;
     })
+);
+
+const removeExeFromProcessNames = R.pipe(
+    R.forEach((process) =>
+    {
+        if (process.name.endsWith('.exe'))
+        {
+            process.name = process.name.replace(/\.exe/i, '');
+        }
+    })
+);
+
+const removeBrokenProcesses = R.pipe(
+    R.filter(p => !!p.name
+            && !!p.pid
+            && !!p.sessionName
+            && !!p.sessionNumber
+            && !!p.memoryUsage
+    )
 );
 
 // Ramda is pretty fucking clean.
@@ -66,9 +88,11 @@ function getProcesses()
     const pipeline = R.pipe(
         getProcessesAsArrays,
         getProcessesAsObjects,
+        removeBrokenProcesses,
+        removeExeFromProcessNames,
         convertPidAndSessionNumberToInt,
         convertMemoryUsageToInt
-    );
+    )
 
     return pipeline(processes);
 }

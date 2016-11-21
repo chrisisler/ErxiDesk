@@ -38,22 +38,25 @@ function objectForEach(object, func)
  * on the element, after verifying that that element was
  * actually clicked.
  *
+ * @param {String} whichClick - 'left' or 'right' click
  * @param {Object} jQueryElement - Something like `$('div.input-wrap')`
  * @param {Function} func - Function to call on clicked DOM object.
  */
-function whenClicked(jQueryElement, func)
+function whenClicked(whichClick, jQueryElement, func)
 {
-    if (!jQueryElement || !func)
+    jQueryElement.on('mousedown', (event) =>
     {
-        console.error('Error: whenClicked() -> Insufficient params.');
-    }
-
-    jQueryElement.on('click', () =>
-    {
+        // Do I need this if statement?
         if ($(this).data('clicked', true))
         {
-            const clickedObject = event.target;
-            func(clickedObject);
+            if (whichClick === 'left' && event.which === 1)
+            {
+                func(event);
+            }
+            else if (whichClick === 'right' && event.which === 3)
+            {
+                func(event);
+            }
         }
     });
 }

@@ -13,7 +13,7 @@ let processes = GetProcesses.getProcesses();
 
 // External libraries.
 const R = require('ramda');
-const $ = require('jquery');
+let $ = require('jquery');
 
 /**
  * Given the names of keys in one <process> in <processes>,
@@ -46,7 +46,7 @@ function showProcessHeader(processKeys)
         }
 
         // Set property title (in HTML).
-        headerElem.append(`<th class="${headerClass}-title" id="${key}">${_getTitle(key)}</th>`);
+        headerElem.append(`<th class="${headerClass}-title ${key}" id="${key}">${_getTitle(key)}</th>`);
     });
 
     // Add a non 'js-' prepended class (to the title made above) for CSS styling.
@@ -57,8 +57,9 @@ function showProcessHeader(processKeys)
  * For each <process> in <processes> (retrieved from ./getProcesses.js),
  * display that processes properties to the user.
  * @param {Array} processes - Array of objects representing user's processes.
+ * @param {Boolean} doRedraw - Whether to clear previous process data or not.
  */
-function showProcessData(processes)
+function showProcessData(processes, doRedraw=false)
 {
     // Name of class given to elements created by this function.
     const dataClass = 'js-process-data';
@@ -66,27 +67,37 @@ function showProcessData(processes)
 
     // User can click a process property title in the header to sort each process
     // in the table by that property (ascending). When this is done, this
-    // function is called with <processes> re-ordered based on what was clicked.
+    // function is called with <processes> sorted based on what was clicked.
     // Empty the js-process-data-wrap container of processes and redraw.
-    if (processDataWrapElem.length > 0) { processDataWrapElem.empty(); }
+    if (doRedraw && processDataWrapElem.length > 0)
+    {
+        processDataWrapElem.empty();
+    }
+
+    // Not redrawing, then this function is being called for the first time.
+    // Default behavior is for <processes> to be sorted based on memory usage.
+    if (!doRedraw)
+    {
+        processes = sortProcessesBy('memoryUsage', processes, true);
+    }
 
     // Each <process> (row) is given a class name with its index = numProcesses.
     let numProcesses = processDataWrapElem.length;
 
-    // processes = processes.slice(0, 5); // TESTING
-
     processes.forEach((proc) =>
     {
         // Name of class given to rows created by this for-loop.
-        const newProcessClass = `${dataClass}-${numProcesses++}`;
+        const genericClass = `${dataClass}-row`;
+        const uniqueClass = `${genericClass}-${numProcesses++}`;
 
-        // Create table row to represent a <process> object and contain,
-        // per column, that processes properties.
-        const newProcess = `<tr class="${newProcessClass}"></tr>`;
-        processDataWrapElem.append(newProcess);
+        // Create table row to represent a <process> object.
+        const newProcessRow = `<tr class="${uniqueClass} ${genericClass}"></tr>`;
+        processDataWrapElem.append(newProcessRow);
+
+        const newProcessRowElem = $(`tr.${uniqueClass}`);
+        newProcessRowElem.addClass('css-process-data');
 
         // For each property, add that data value into the row.
-        const newProcessElem = $(`tr.${newProcessClass}`);
         Util.objectForEach(proc, (key, value, index, object) =>
         {
             // Append ' K' to <memoryUsage> property.
@@ -95,15 +106,55 @@ function showProcessData(processes)
                 value = value.toLocaleString() + ' K';
             }
 
-            newProcessElem.append(`<td class="${dataClass}-${key}">${value}</td>`);
+            // Append <newProcessData> inside `a` tags so we can add a dropdown menu later.
+            const innerData = `<a class="dropdown-button" data-activates="${genericClass}">${value}</a>`;
+            const newProcessData = `<td class="${dataClass}-${key} ${key} ${dataClass}-value">${innerData}</td>`;
+            newProcessRowElem.append(newProcessData);
         });
-        newProcessElem.addClass('css-process-data');
     });
+    // console.log('Number of processes:', processes.length);
+}
+
+/**
+ * Sort and return <processes>, based on a property (key) of a <process> object.
+ * @param {String} sortKey - Key of a <process> object to sort by (in String form).
+ * @param {Array} processes - Current processes running on this machine.
+ * @param {Boolean} doReverseSort - If true, then sort descending (z-a).
+ * @returns sortedProcesses - <processes> sorted by a property, <sortKey>.
+ */
+function sortProcessesBy(sortKey, processes, doReverseSort)
+{
+    const sortValue = processes[0][sortKey];
+    const ifSortValueIsString = R.partial(R.is(String), [sortValue]);
+    const removeBrokenProcesses = R.filter(proc => !!proc[sortKey]);
+    const reverseOrNot = doReverseSort ? R.reverse : R.identity;
+
+    const sortingPipeline = R.pipe(
+        removeBrokenProcesses,
+        R.sortBy(
+            R.ifElse(
+                ifSortValueIsString,
+                R.pipe(R.prop(sortKey), R.toLower),
+                R.prop(sortKey)
+            )
+        ),
+        reverseOrNot
+    );
+
+    return sortingPipeline(processes);
 }
 
 $(document).ready(() =>
 {
+    // <processKeys> is an array of the keys of a <process> object.
     let processKeys = null;
+
+    // <sortKey> is a key of a <process> object - used for sorting <processes>.
+    let sortKey = null;
+
+    // <doReverseSort> specificies whether or not to sort <processes>
+    // in reverse order or not. Default is non-reversed (which is ascending-order).
+    let doReverseSort = false;
 
     function init()
     {
@@ -111,49 +162,44 @@ $(document).ready(() =>
         processKeys = Object.keys(processes[0]);
 
         showProcessHeader(processKeys);
-        showProcessData(processes);
+        showProcessData(processes, false, false);
     }
     init();
 
-    // When user clicks a process header title (ex: 'Process ID'), sort
-    // (and redraw) each <process> based on that property, in ascending order.
-    Util.whenClicked($('.js-process-header-title'), (clickedProcessPropertyHeader) =>
-    {
-        const sortKey = clickedProcessPropertyHeader.id;
-        const propertyToSortBy = processes[0][sortKey];
-        const removeBrokenProcesses = R.filter(_ => !!_[sortKey]);
+    const processHeaderTitleClass = 'js-process-header-title';
+    const processHeaderTitleElems = $(`.${processHeaderTitleClass}`);
 
-        let sortingPipeline;
-        if (R.is(String, propertyToSortBy))
+    /**
+     * When user clicks a process header title (ex: 'Process ID'), sort
+     * (and redraw) each <process> based on that property.
+     */
+    Util.whenClicked('left', processHeaderTitleElems, (clickedDomObject) =>
+    {
+        // User clicks a process header title (ex: 'Memory Usage') for a
+        // second time -> sort redraw <processes> but in reverse order.
+        if (sortKey === clickedDomObject.target.id)
         {
-            sortingPipeline = R.pipe(
-                removeBrokenProcesses,
-                R.sortBy(
-                    R.compose(
-                        R.toLower,
-                        R.prop(sortKey)
-                    )
-                )
-            );
-        }
-        else if (R.is(Number, propertyToSortBy))
-        {
-            sortingPipeline = R.pipe(
-                removeBrokenProcesses,
-                R.sortBy(
-                    R.prop(sortKey)
-                )
-            );
+            doReverseSort = !doReverseSort;
         }
         else
         {
-            console.error('Error: Util.whenClicked() -> <propertyToSortBy> invalid.');
-            return;
+            sortKey = clickedDomObject.target.id;
         }
 
-        processes = sortingPipeline(processes);
+        // Since user clicked on a header title, we will always do a redraw.
+        const doRedraw = true;
 
-        showProcessData(processes);
+        const sortedProcesses = sortProcessesBy(sortKey, processes, doReverseSort);
+        showProcessData(sortedProcesses, doRedraw);
+    });
+
+    Util.whenClicked('right', $('.js-process-data-row'), (clickedDomObject) =>
+    {
+        /**
+         * Add 'class="dropdown-button"'
+         * Add 'data-activates="js-process-data-dropdown"'
+         */
+        console.log('right-clicked a process');
     });
 });
 

@@ -11,34 +11,35 @@
 
 </head>
 <body class="css-body-wrap">
+
+    <!-- <a class="dropdown-button btn" href="#" data-activates="dropdown1">Dropdown button</a> -->
+    <!-- <a class="dropdown-button btn" data-activates="dropdown1">Hodor</a> -->
+
+    <ul id="js-process-data-row" class="dropdown-content">
+        <li><a>one</a></li>
+        <li><a>two</a></li>
+        <li><a>three</a></li>
+    </ul>
+
     <div class="container">
         <table class="highlight centered responsive-table css-process-wrap">
 
             <thead class="js-process-header-wrap">
-                <!-- <tr>                      -->
-                <!--     <th>Name</th>         -->
-                <!--     <th>Process ID</th>   -->
-                <!--     <th>Session Name</th> -->
-                <!--     <th>Session #</th>    -->
-                <!--     <th>Memory Usage</th> -->
-                <!-- </tr>                     -->
+                <!-- Data from ./showProcesses.js -->
             </thead>
 
             <tbody class="js-process-data-wrap">
-                <!-- <tr class="mock">              -->
-                <!--     <td class="mock">mock</td> -->
-                <!--     <td class="mock">mock</td> -->
-                <!--     <td class="mock">mock</td> -->
-                <!--     <td class="mock">mock</td> -->
-                <!--     <td class="mock">mock</td> -->
-                <!-- </tr>                          -->
+                <!-- Data from ./showProcesses.js -->
             </tbody>
 
         </table>
     </div>
 
     <!-- Scripts -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
     <script src="./js/processes/showProcesses.js" type="text/javascript"></script>
+    <script src="./js/materialize.js" type="text/javascript"></script>
 </body>
 </html>
 
