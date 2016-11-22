@@ -1,8 +1,11 @@
 - Make icon background transparent.
+
 - Search bar for processes.
+
 - Abillity hide columns somehow.
-- Show total number of processes/rows displayed.
-- Add delay to hover highlight on process property headers.
-- Right-click a process -> menu displays options:
-  - Kill `${processName}` (PID: 6904)
-  - Kill all `${processName}` (4)
+
+- Show total number of processes/rows displayed (when? where?)
+
+- Right-click a process -> menu displays options.
+  - Remove left-click dropdown.
+  - Actually kill a process. Show a `Materialize.toast()` on success/error. Async.

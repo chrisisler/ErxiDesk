@@ -8,7 +8,7 @@
 // Internal libraries.
 const Util = require('./js/util/util.js')
 const GetProcesses = require('./js/processes/getProcesses.js');
-const PROCESS_PROPERTY_KEYS = GetProcesses.PROCESS_PROPERTY_KEYS;
+const PROCESS_KEY_NAMES = GetProcesses.PROCESS_KEY_NAMES;
 let processes = GetProcesses.getProcesses();
 
 // External libraries.
@@ -35,14 +35,14 @@ function showProcessHeader(processKeys)
     // nice-looking column titles based on the keys of one that object.
     processKeys.forEach((key, index, array) =>
     {
-        /** @see ./getProcesses.js for how PROCESS_PROPERTY_KEYS is ordered. @private */
+        /** @see ./getProcesses.js for how PROCESS_KEY_NAMES is ordered. @private */
         function _getTitle(key)
         {
-            if      (key === PROCESS_PROPERTY_KEYS[0]) return 'Name';
-            else if (key === PROCESS_PROPERTY_KEYS[1]) return 'Process ID';
-            else if (key === PROCESS_PROPERTY_KEYS[2]) return 'Session Name';
-            else if (key === PROCESS_PROPERTY_KEYS[3]) return 'Session #';
-            else if (key === PROCESS_PROPERTY_KEYS[4]) return 'Memory Usage';
+            if      (key === PROCESS_KEY_NAMES[0]) return 'Name';
+            else if (key === PROCESS_KEY_NAMES[1]) return 'Process ID';
+            else if (key === PROCESS_KEY_NAMES[2]) return 'Session Name';
+            else if (key === PROCESS_KEY_NAMES[3]) return 'Session #';
+            else if (key === PROCESS_KEY_NAMES[4]) return 'Memory Usage';
         }
 
         // Set property title (in HTML).
@@ -50,7 +50,8 @@ function showProcessHeader(processKeys)
     });
 
     // Add a non 'js-' prepended class (to the title made above) for CSS styling.
-    $(`th.${headerClass}-title`).addClass('css-process-header-title');
+    const headerTitleElem = $(`th.${headerClass}-title`);
+    headerTitleElem.addClass('css-process-header-title');
 }
 
 /**
@@ -71,6 +72,7 @@ function showProcessData(processes, doRedraw=false)
     // Empty the js-process-data-wrap container of processes and redraw.
     if (doRedraw && processDataWrapElem.length > 0)
     {
+        // TODO: Redrawing removes the dropdown menu. Fix.
         processDataWrapElem.empty();
     }
 
@@ -100,19 +102,17 @@ function showProcessData(processes, doRedraw=false)
         // For each property, add that data value into the row.
         Util.objectForEach(proc, (key, value, index, object) =>
         {
-            // Append ' K' to <memoryUsage> property.
-            if (key === 'memoryUsage')
-            {
-                value = value.toLocaleString() + ' K';
-            }
+            // <memoryUsage> property is a Number in kilobytes, so append ' K'.
+            if (key === 'memoryUsage') { value = value.toLocaleString() + ' K'; }
 
-            // Append <newProcessData> inside `a` tags so we can add a dropdown menu later.
+            // <value> must be wrapped in <a> tags so we can use Materialize's dropdown menu.
             const innerData = `<a class="dropdown-button" data-activates="${genericClass}">${value}</a>`;
             const newProcessData = `<td class="${dataClass}-${key} ${key} ${dataClass}-value">${innerData}</td>`;
             newProcessRowElem.append(newProcessData);
         });
     });
-    // console.log('Number of processes:', processes.length);
+    // console.log(processes.length, 'processes');
+    Materialize.toast(`${processes.length} processes`, 2000);
 }
 
 /**
@@ -126,11 +126,9 @@ function sortProcessesBy(sortKey, processes, doReverseSort)
 {
     const sortValue = processes[0][sortKey];
     const ifSortValueIsString = R.partial(R.is(String), [sortValue]);
-    const removeBrokenProcesses = R.filter(proc => !!proc[sortKey]);
     const reverseOrNot = doReverseSort ? R.reverse : R.identity;
 
     const sortingPipeline = R.pipe(
-        removeBrokenProcesses,
         R.sortBy(
             R.ifElse(
                 ifSortValueIsString,
@@ -144,11 +142,65 @@ function sortProcessesBy(sortKey, processes, doReverseSort)
     return sortingPipeline(processes);
 }
 
+function showProcessOptions(clickedProcess, processes)
+{
+    // Reconstruct a <process> object from the right-clicked element data.
+    const processChildren = $(clickedProcess.currentTarget).children();
+    const processData = {};
+    R.range(0, 5).forEach((index) =>
+    {
+        processData[PROCESS_KEY_NAMES[index]] = processChildren[index].textContent;
+    });
+
+    const dropdownWrapElem = $(`#js-process-data-row`);
+    const numOfThisProcess = R.partial(
+        R.pipe(R.filter(_ => _.name === processData.name), R.length),
+        [processes]
+    )();
+
+    // The order in which dropdown menu items are appended does matter.
+    // The dropdown wrap element is first cleared of items from previous.
+    dropdownWrapElem.empty();
+
+    // TODO: When killing processes, if the process fails to be killed, try
+    // again with '.exe' appended to the end - since it was removed from some procs.
+
+    function _addDropdownOption(id, textContent)
+    {
+        const idOrNot = !!id ? `id="${id}"` : '';
+        dropdownWrapElem.append(`<li ${idOrNot}><a>${textContent}</a></li>`);
+    }
+
+    const dropdownItemClassPrefix = 'js-processes-dropdown';
+    const killOne = `Kill process "${processData.name}" (PID: ${processData.pid})`;
+    _addDropdownOption(`${dropdownItemClassPrefix}-kill-one`, killOne);
+
+    if (numOfThisProcess > 1)
+    {
+        const killAll = `Kill all ${numOfThisProcess} "${processData.name}" processes`;
+        _addDropdownOption(`${dropdownItemClassPrefix}-kill-all`, killAll);
+    }
+
+    _addDropdownOption(`${dropdownItemClassPrefix}-cancel`, 'Cancel');
+
+    processChildren.each((index, element) =>
+    {
+        if ($(element).is(':hover'))
+        {
+            const dropdownElem = element.firstChild;
+
+            $(dropdownElem).dropdown('open');
+
+            dropdownWrapElem.on('mouseleave', () =>
+            {
+                $(dropdownElem).dropdown('close');
+            });
+        }
+    });
+}
+
 $(document).ready(() =>
 {
-    // <processKeys> is an array of the keys of a <process> object.
-    let processKeys = null;
-
     // <sortKey> is a key of a <process> object - used for sorting <processes>.
     let sortKey = null;
 
@@ -158,48 +210,37 @@ $(document).ready(() =>
 
     function init()
     {
-        // Reliable only if each process has the same keys.
-        processKeys = Object.keys(processes[0]);
-
-        showProcessHeader(processKeys);
+        showProcessHeader(PROCESS_KEY_NAMES);
         showProcessData(processes, false, false);
     }
     init();
-
-    const processHeaderTitleClass = 'js-process-header-title';
-    const processHeaderTitleElems = $(`.${processHeaderTitleClass}`);
 
     /**
      * When user clicks a process header title (ex: 'Process ID'), sort
      * (and redraw) each <process> based on that property.
      */
-    Util.whenClicked('left', processHeaderTitleElems, (clickedDomObject) =>
+    Util.whenClicked('left', $('.js-process-header-title'), (clickedDomObject) =>
     {
+        const clickedHeader = clickedDomObject.target;
+
         // User clicks a process header title (ex: 'Memory Usage') for a
         // second time -> sort redraw <processes> but in reverse order.
-        if (sortKey === clickedDomObject.target.id)
+        if (sortKey === clickedHeader.id)
         {
             doReverseSort = !doReverseSort;
         }
         else
         {
-            sortKey = clickedDomObject.target.id;
+            sortKey = clickedHeader.id;
         }
 
-        // Since user clicked on a header title, we will always do a redraw.
-        const doRedraw = true;
-
         const sortedProcesses = sortProcessesBy(sortKey, processes, doReverseSort);
-        showProcessData(sortedProcesses, doRedraw);
+        showProcessData(sortedProcesses, true);
     });
 
     Util.whenClicked('right', $('.js-process-data-row'), (clickedDomObject) =>
     {
-        /**
-         * Add 'class="dropdown-button"'
-         * Add 'data-activates="js-process-data-dropdown"'
-         */
-        console.log('right-clicked a process');
+        showProcessOptions(clickedDomObject, processes);
     });
 });
 

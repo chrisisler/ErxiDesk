@@ -61,6 +61,9 @@ function createWindow()
         minHeight: WINDOW_MIN_HEIGHT, // Not working - unless this is min starting value.
         width: WINDOW_DEFAULT_WIDTH,
         height: WINDOW_DEFAULT_HEIGHT,
+        autoHideMenuBar: true,
+        title: 'ErxiDesk',
+        darkTheme: true,
         icon: './images/ErxiDesk-Icon-1.0.png'
     };
 
