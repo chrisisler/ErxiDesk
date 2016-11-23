@@ -171,6 +171,7 @@ function showProcessOptions(clickedProcess, processes)
         dropdownWrapElem.append(`<li ${idOrNot}><a>${textContent}</a></li>`);
     }
 
+
     const dropdownItemClassPrefix = 'js-processes-dropdown';
     const killOne = `Kill process "${processData.name}" (PID: ${processData.pid})`;
     _addDropdownOption(`${dropdownItemClassPrefix}-kill-one`, killOne);

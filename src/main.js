@@ -78,7 +78,7 @@ function createWindow()
     }));
 
     // Automatically open Chromium DevTools.
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 
     // When the window is closed, dereference the window
     // object for garbage collection
