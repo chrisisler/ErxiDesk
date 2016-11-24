@@ -50,7 +50,7 @@ function showProcessHeader(processKeys)
     });
 
     // Add a non 'js-' prepended class (to the title made above) for CSS styling.
-    const headerTitleElem = $(`th.${headerClass}-title`);
+    const headerTitleElem = $(`th.${headerClass}-title`); // Make global.
     headerTitleElem.addClass('css-process-header-title');
 }
 
@@ -89,7 +89,7 @@ function showProcessData(processes, doRedraw=false)
     processes.forEach((proc) =>
     {
         // Name of class given to rows created by this for-loop.
-        const genericClass = `${dataClass}-row`;
+        const genericClass = `${dataClass}-row`; // Make global.
         const uniqueClass = `${genericClass}-${numProcesses++}`;
 
         // Create table row to represent a <process> object.
@@ -144,6 +144,12 @@ function sortProcessesBy(sortKey, processes, doReverseSort)
 
 function showProcessOptions(clickedProcess, processes)
 {
+    function _addDropdownOption(id, textContent)
+    {
+        const idOrNot = !!id ? `id="${id}"` : '';
+        dropdownWrapElem.append(`<li ${idOrNot}><a>${textContent}</a></li>`);
+    }
+
     // Reconstruct a <process> object from the right-clicked element data.
     const processChildren = $(clickedProcess.currentTarget).children();
     const processData = {};
@@ -152,37 +158,26 @@ function showProcessOptions(clickedProcess, processes)
         processData[PROCESS_KEY_NAMES[index]] = processChildren[index].textContent;
     });
 
+    // The order in which dropdown menu items are appended is important.
+    // The dropdown wrap element is first cleared of items from previous dropdowns.
     const dropdownWrapElem = $(`#js-process-data-row`);
-    const numOfThisProcess = R.partial(
-        R.pipe(R.filter(_ => _.name === processData.name), R.length),
-        [processes]
-    )();
-
-    // The order in which dropdown menu items are appended does matter.
-    // The dropdown wrap element is first cleared of items from previous.
     dropdownWrapElem.empty();
 
     // TODO: When killing processes, if the process fails to be killed, try
     // again with '.exe' appended to the end - since it was removed from some procs.
 
-    function _addDropdownOption(id, textContent)
-    {
-        const idOrNot = !!id ? `id="${id}"` : '';
-        dropdownWrapElem.append(`<li ${idOrNot}><a>${textContent}</a></li>`);
-    }
-
-
-    const dropdownItemClassPrefix = 'js-processes-dropdown';
+    const dropdownItemClassPrefix = 'js-processes-dropdown'; // Make global.
     const killOne = `Kill process "${processData.name}" (PID: ${processData.pid})`;
+    _addDropdownOption(`${dropdownItemClassPrefix}-cancel`, 'Cancel'); // Append 'cancel' first.
     _addDropdownOption(`${dropdownItemClassPrefix}-kill-one`, killOne);
+
+    const numOfThisProcess = R.pipe(R.filter(p => p.name === processData.name), R.length)(processes);
 
     if (numOfThisProcess > 1)
     {
         const killAll = `Kill all ${numOfThisProcess} "${processData.name}" processes`;
         _addDropdownOption(`${dropdownItemClassPrefix}-kill-all`, killAll);
     }
-
-    _addDropdownOption(`${dropdownItemClassPrefix}-cancel`, 'Cancel');
 
     processChildren.each((index, element) =>
     {
@@ -195,6 +190,7 @@ function showProcessOptions(clickedProcess, processes)
             dropdownWrapElem.on('mouseleave', () =>
             {
                 $(dropdownElem).dropdown('close');
+                dropdownWrapElem.empty();
             });
         }
     });

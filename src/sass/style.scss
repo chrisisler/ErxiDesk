@@ -4,7 +4,18 @@
  * This file contains Sassy CSS for index.html.
  */
 
+// Imports must be in this order (see materialize.scss).
+// "global" is dependent on "variables" and "typography".
 @import "components/color";
+@import "components/variables";
+@import "components/global";
+@import "components/typography";
+
+/**
+ * ( TODO: Move custom mixins to _customMixins.scss )
+ * Mixins 
+ */
+
 
 @mixin highlightBackground()
 {
@@ -85,20 +96,19 @@ html
 // Each process/row.
 .css-process-data
 {
-    z-index: 3000;
     @include noSelect();
 
     &:hover
     {
         cursor: default;
         @include highlightBackground();
+        @extend .z-depth-1;
     }
 
     // Materialize CSS defaults <a>'s to blue,
     // I want <a>'s to be my text color.
     a
     {
-        z-index: -1;
         @include defaultText();
     }
 }
@@ -115,8 +125,9 @@ html
     }
 }
 
-thead
+.css-process-header-wrap
 {
-    border-bottom-color: color("blue-grey", "darken-2");
+    // border-bottom-color: color("blue-grey", "darken-2");
+    @extend .z-depth-2;
+    border-bottom: none;
 }
-

@@ -64,7 +64,7 @@ function createWindow()
         autoHideMenuBar: true,
         title: 'ErxiDesk',
         darkTheme: true,
-        icon: './images/ErxiDesk-Icon-1.0.png'
+        icon: './images/ErxiDesk-Icon-0.4.png'
     };
 
     mainWindow = new BrowserWindow(windowOptions);

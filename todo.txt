@@ -1,5 +1,3 @@
-- Make icon background transparent.
-
 - Search bar for processes.
 
 - Abillity hide columns somehow.
