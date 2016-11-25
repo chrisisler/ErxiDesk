@@ -1,9 +1,7 @@
-- Search bar for processes.
-
-- Abillity hide columns somehow.
-
-- Show total number of processes/rows displayed (when? where?)
-
+- Search for processes.
+- Right click property title -> dropdown -> 'hide this column'.
+- Show total number of processes/rows displayed
 - Right-click a process -> menu displays options.
-  - Remove left-click dropdown.
   - Actually kill a process. Show a `Materialize.toast()` on success/error. Async.
+- Add `loading...` visual before processes are visually presented.
+- Use sick new html5 templates to separate components
