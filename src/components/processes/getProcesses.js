@@ -9,7 +9,7 @@ const R = require('ramda');
 const CP = require('child_process');
 const OS = require('os');
 
-const PROCESS_KEY_NAMES = [ 'name', 'pid', 'sessionName', 'sessionNumber', 'memoryUsage' ];
+const PROCESS_KEYS = [ 'name', 'pid', 'sessionName', 'sessionNumber', 'memoryUsage' ];
 
 // Convert `tasklist` output to an array of strings.
 const getProcessesAsArrays = R.pipe(
@@ -24,11 +24,11 @@ const getProcessesAsObjects = R.pipe(
         const processAsObject = {};
         processAsArray.forEach((processValue, index, array) =>
         {
-            // In <PROCESS_KEY_NAMES>, the elements are ordered the same as the column
+            // In <PROCESS_KEYS>, the elements are ordered the same as the column
             // headers when executing the `tasklist` command on a Windows machine.
             // These names are used as keys to convert each process from a list
             // of values to an object with key-value pairs.
-            processAsObject[PROCESS_KEY_NAMES[index]] = processValue;
+            processAsObject[PROCESS_KEYS[index]] = processValue;
         });
         return processAsObject;
     })
@@ -51,7 +51,7 @@ const convertMemoryUsageToNumber = R.pipe(
     {
         let memUse = process.memoryUsage;
         memUse = memUse.substr(0, memUse.length - 2);  // Remove ' K'.
-        memUse = memUse.replace(/,/, '')               // Remove ','.
+        memUse = memUse.replace(/,/, '');              // Remove ','.
         process.memoryUsage = Number.parseInt(memUse); // String to Integer.
     })
 );
@@ -89,22 +89,23 @@ function getProcesses()
         removeExeFromProcessNames,
         convertPidAndSessionNumberToNumber,
         convertMemoryUsageToNumber
-    )
+    );
 
     return pipeline(processes);
 }
 
-// For testing.
 const pipeline = R.pipe(
     R.identity
 );
 
-const result = pipeline(getProcesses());
+let input;
+const result = pipeline(input);
 // console.log(result);
 
+// ES6 syntax
 module.exports =
 {
     getProcesses,
-    PROCESS_KEY_NAMES
+    PROCESS_KEYS
 };
 

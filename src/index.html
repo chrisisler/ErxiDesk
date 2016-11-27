@@ -1,42 +1,44 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
+
     <meta http-equiv="Content-Type" content="text/hml; charset=UTF-8"/>
     <title>ErxiDesk</title>
 
     <!-- CSS -->
     <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
-    <link href="./sass/materialize.css" rel="stylesheet" type="text/css" media="screen,projection">
+    <link href="./sass/materialize.css" rel="stylesheet" type="text/css" media="screen, projection">
     <link href="./sass/style.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML -->
+    <link rel="import" href="./components/processes/processes.html" id="processes-import">
 
 </head>
 <body class="css-body-wrap">
 
     <div class="container">
-        <table class="highlight centered css-process-wrap">
 
-            <thead class="js-process-header-wrap css-process-header-wrap">
-                <!-- Data from ./showProcesses.js -->
-            </thead>
+        <section id="processes-component"></section>
 
-            <tbody class="js-process-data-wrap">
-                <!-- Data from ./showProcesses.js -->
-            </tbody>
+        <footer>
+            <!-- TODO: status bar -->
+        </footer>
 
-            <ul id="js-process-data-row" class="dropdown-content css-process-dropdown-content">
-                <!-- Data from ./showProcesses.js -->
-                <!-- <li><a>one</a></li> -->
-                <!-- <li><a>two</a></li> -->
-            </ul>
-
-        </table>
-        <!-- End processes table -->
     </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
-    <script src="./js/processes/showProcesses.js" type="text/javascript"></script>
     <script src="./js/materialize.js" type="text/javascript"></script>
+
+    <!-- Import processes component -->
+    <script type="text/javascript">
+        // https://github.com/disler/IBClient/blob/master/app/components/chat/chat.html
+        var link = document.querySelector('#processes-import');
+        var template = link.import.querySelector('#processes-template');
+        document.getElementById('processes-component').appendChild(template.content);
+    </script>
+
 </body>
 </html>
 

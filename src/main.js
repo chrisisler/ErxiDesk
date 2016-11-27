@@ -17,7 +17,7 @@ let mainWindow = null;
 
 // Currently, there is no support for running multiple instance of the app at
 // the same time.
-let allowMultipleInstances = false;
+// let allowMultipleInstances = false;
 
 /*
 const appAlreadyRunning = app.makeSingleInstance(() =>

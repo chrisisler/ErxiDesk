@@ -1,7 +1,25 @@
 - Search for processes.
+
 - Right click property title -> dropdown -> 'hide this column'.
-- Show total number of processes/rows displayed
+
+- Show total number of processes/rows displayed (in status bar (?))
+
 - Right-click a process -> menu displays options.
   - Actually kill a process. Show a `Materialize.toast()` on success/error. Async.
-- Add `loading...` visual before processes are visually presented.
-- Use sick new html5 templates to separate components
+
+- status bar as footer in index.html.
+
+- fixed table header?
+
+- scroll back to top button placed at end of table?
+
+- option to show top N elements using R.take(N)?
+
+- option for removing duplicates of processes and summing memory usage
+  - use R.uniq for process.name
+  - use one of the functions in ./getProcesses.js to move the
+    memoryUsage property from string to int, sum all the memoryUsage's from
+    the instance of that property, and make one super-object for that process.
+
+- process dropdown-menu option to hide this current process (with that unique PID),
+  or to hide all processes of that name (with R.whereEq or R.without)

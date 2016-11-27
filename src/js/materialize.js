@@ -752,7 +752,7 @@ if (jQuery) {
               if (curr_options.stopPropagation) {
                 e.stopPropagation();
               }
-              placeDropdown('click');
+              // placeDropdown('click');
             }
             // If origin is clicked and menu is open, close menu
             else if (origin.hasClass('active')) {

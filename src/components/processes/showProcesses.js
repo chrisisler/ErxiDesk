@@ -5,9 +5,9 @@
 // Internal libraries.
 const Util = require('./js/util/util.js');
 
-const GetProcesses = require('./js/processes/getProcesses.js');
-const PROCESS_KEY_NAMES = GetProcesses.PROCESS_KEY_NAMES;
-let processes = GetProcesses.getProcesses();
+const Processes = require('./components/processes/getProcesses.js');
+const PROCESS_KEYS = Processes.PROCESS_KEYS;
+let processes = Processes.getProcesses();
 
 // External libraries.
 const R = require('ramda');
@@ -20,14 +20,16 @@ const Header = (function()
     const jsClass = `js-${baseClass}`;
     const jsTitleClass = `${jsClass}-title`;
 
+    const titles = [ 'Name', 'Process ID', 'Session Name', 'Session #', 'Memory Usage' ];
+
+    const doRedraw = true;
+
     // Given a <key> of a <process>, return a title string for that property.
     function _getTitle(key)
     {
-        if      (key === PROCESS_KEY_NAMES[0]) { return 'Name'; }
-        else if (key === PROCESS_KEY_NAMES[1]) { return 'Process ID'; }
-        else if (key === PROCESS_KEY_NAMES[2]) { return 'Session Name'; }
-        else if (key === PROCESS_KEY_NAMES[3]) { return 'Session #'; }
-        else if (key === PROCESS_KEY_NAMES[4]) { return 'Memory Usage'; }
+        let title;
+        R.range(0, 5).forEach(index => { if (key === PROCESS_KEYS[index]) title = titles[index]; });
+        return title;
     }
 
     const Header =
@@ -42,7 +44,7 @@ const Header = (function()
         init: function()
         {
             // MUST BE IN THIS ORDER.
-            Header.show(PROCESS_KEY_NAMES);
+            Header.show(PROCESS_KEYS);
             Header.bindUIActions();
         },
 
@@ -58,7 +60,7 @@ const Header = (function()
         sorting:
         {
             key: null, // A key of a <process> object.
-            doReverseSort: false,
+            doReverseOrder: false,
 
             handleSorting: function(clickedHeaderHtml, processes)
             {
@@ -68,20 +70,22 @@ const Header = (function()
                 // a second time. Allow user to click again to reverse sort order.
                 if (Header.sorting.key === clickedHeader.id)
                 {
-                    Header.sorting.doReverseSort = !Header.sorting.doReverseSort;
+                    Header.sorting.doReverseOrder = !Header.sorting.doReverseOrder;
                 }
                 else
                 {
                     Header.sorting.key = clickedHeader.id;
                 }
 
-                const sortedProcesses = ProcData.sort(Header.sorting.key, processes, Header.sorting.doReverseSort);
-                const doRedraw = true;
+                const sortedProcesses = ProcData.sort(
+                    Header.sorting.key, processes, Header.sorting.doReverseOrder
+                );
                 ProcData.show(sortedProcesses, doRedraw);
             }
         },
 
         // Append titles to table head based on names of keys of a process object.
+        // <processKeys> is the same exact thing as <PROCESS_KEYS>.
         show: function(processKeys)
         {
             $(Header.Elem.wrap).append(`<tr class="${jsClass}"></tr>`);
@@ -100,8 +104,8 @@ const Header = (function()
     return Header;
 
 }());
-
 // End `Header` namespace.
+
 
 const ProcData = (function()
 {
@@ -111,6 +115,7 @@ const ProcData = (function()
     const jsRowClass = `${jsClass}-row`;
     const memUse = 'memoryUsage';
     const dropdownClass = 'js-process-dropdown';
+    const dropdownAttributes = `class="dropdown-button" data-activates="${jsRowClass}"`;
 
     // For ProcData.dropdown().
     const ProcData =
@@ -148,13 +153,10 @@ const ProcData = (function()
 
             if (doRedraw)
             {
-                // Click a property title -> sort processes by that property.
-                // When this occurs, this function is called with <processes> sorted.
-                // All we have to do here is empty the table body wrapper and redraw.
+                // Sort processes by property by clicked on that property title.
                 if (numProcesses > 0)
                 {
                     // TODO: Redrawing removes the dropdown menu. Fix.
-                    console.log('$(ProcData.Elem.wrap) is:', $(ProcData.Elem.wrap));
                     $(ProcData.Elem.wrap).empty();
                 }
             }
@@ -165,7 +167,7 @@ const ProcData = (function()
                 processes = ProcData.sort(memUse, processes, true);
             }
 
-            processes.forEach((proc) =>
+            processes.forEach((proc, index, array) =>
             {
                 const uniqueClass = `${jsRowClass}-${numProcesses++}`;
                 const newProcessRowHtml = `<tr class="${uniqueClass} ${jsRowClass}"></tr>`;
@@ -179,31 +181,28 @@ const ProcData = (function()
                     // <memoryUsage> property is a Number representing kilobytes -> append ' K'.
                     if (key === memUse) { value = value.toLocaleString() + ' K'; }
 
-                    const innerAttributes = `class="dropdown-button" data-activates="${jsRowClass}"`;
-                    const innerData = `<a ${innerAttributes}>${value}</a>`;
+                    const innerData = `<a ${dropdownAttributes}>${value}</a>`;
 
                     const outerAttributes = `class="${jsClass}-${key} ${key} ${jsClass}-value"`;
-                    const newProcess = `<td ${outerAttributes}>${innerData}</td>`;
+                    const newProcessData = `<td ${outerAttributes}>${innerData}</td>`;
 
-                    $(newProcessRowElem).append(newProcess);
+                    $(newProcessRowElem).append(newProcessData);
                 });
             });
-            // TODO: Make cool notifications? Its 2:26 AM, this may not be a good idea.
-            // Materialize.toast(`${numProcesses} processes`, 1000);
         },
 
         /**
          * Sort and return <processes>, based on a property (key) of a <process> object.
          * @param {String} sortKey - Key of a <process> object to sort by (in String form).
          * @param {Array} processes - Current processes running on this machine.
-         * @param {Boolean} doReverseSort - If true, then sort descending (z-a).
+         * @param {Boolean} doReverseOrder - If true, then sort descending (z-a).
          * @returns sortedProcesses - <processes> sorted by a property, <sortKey>.
          */
-        sort: function(sortKey, processes, doReverseSort)
+        sort: function(sortKey, processes, doReverseOrder)
         {
             const sortValue = processes[0][sortKey];
             const ifSortValueIsString = R.partial(R.is(String), [sortValue]);
-            const reverseOrNot = doReverseSort ? R.reverse : R.identity;
+            const reverseOrNot = doReverseOrder ? R.reverse : R.identity;
 
             const sortingPipeline = R.pipe(
                 R.sortBy(
@@ -215,7 +214,6 @@ const ProcData = (function()
                 ),
                 reverseOrNot
             );
-
             return sortingPipeline(processes);
         },
 
@@ -259,7 +257,7 @@ const ProcData = (function()
                 const processObj = {};
                 R.range(0, 5).forEach((index) =>
                 {
-                    processObj[PROCESS_KEY_NAMES[index]] = processObjHtml[index].textContent;
+                    processObj[PROCESS_KEYS[index]] = processObjHtml[index].textContent;
                 });
 
                 // The dropdown wrap element is first cleared of items from previous dropdowns.

@@ -13,7 +13,7 @@
 
 /**
  * ( TODO: Move custom mixins to _customMixins.scss )
- * Mixins 
+ * Mixins
  */
 
 
@@ -57,6 +57,11 @@
  * ( TODO: Move global styles into global.scss )
  * Global Styles
  */
+
+html, body
+{
+    height: 100%
+}
 
 html
 {
