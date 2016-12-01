@@ -12,35 +12,7 @@ process.on('uncaughtException', (error) =>
 
 const {app, BrowserWindow} = require('electron');
 
-// Global reference to the (main) window object.
 let mainWindow = null;
-
-// Currently, there is no support for running multiple instance of the app at
-// the same time.
-// let allowMultipleInstances = false;
-
-/*
-const appAlreadyRunning = app.makeSingleInstance(() =>
-{
-    // What to do when someone tries to run a second instance of the app.
-    if (allowMultipleInstances)
-    {
-        if (mainWindow.isMinimized()) { mainWindow.restore(); }
-        mainWindow.focus();
-    }
-    else
-    {
-        app.quit();
-    }
-});
-
-// Currently, there is no support for running multiple instance of the app at
-// the same time.
-if (appAlreadyRunning)
-{
-    app.relaunch();
-}
-*/
 
 const WINDOW_MIN_WIDTH = 800;
 const WINDOW_MIN_HEIGHT = 600;
@@ -57,25 +29,19 @@ function createWindow()
 
     const windowOptions =
     {
-        minWidth: WINDOW_MIN_WIDTH,   // Not working - unless this is min starting value.
-        minHeight: WINDOW_MIN_HEIGHT, // Not working - unless this is min starting value.
+        minWidth: WINDOW_MIN_WIDTH,
+        minHeight: WINDOW_MIN_HEIGHT,
         width: WINDOW_DEFAULT_WIDTH,
         height: WINDOW_DEFAULT_HEIGHT,
         autoHideMenuBar: true,
         title: 'ErxiDesk',
-        darkTheme: true,
-        icon: './images/ErxiDesk-Icon-0.4.png'
+        // icon goes here
     };
 
     mainWindow = new BrowserWindow(windowOptions);
 
-    // Load index.html
-    mainWindow.loadURL(Url.format(
-    {
-        pathname: Path.join(__dirname, 'index.html'),
-        protocol: 'file:',
-        slashes: true
-    }));
+    // Load index.html from port 8080 (hosted by webpack-dev-server).
+    mainWindow.loadURL('http://localhost:8080/');
 
     // Automatically open Chromium DevTools.
     mainWindow.webContents.openDevTools();

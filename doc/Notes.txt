@@ -1,3 +1,0 @@
-In materialize.js, line 755 is commented out to remove left-click
-functionality to display the dropdown menu. I wanted this to be
-right-click only.
