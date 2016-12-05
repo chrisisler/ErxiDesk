@@ -2,17 +2,21 @@
   "name": "erxidesk",
   "version": "0.0.0",
   "description": "Your computer at your fingertips",
-  "main": "./webpack.config.js",
+  "main": "main.js",
   "scripts": {
-    "build": "./node_modules/webpack/bin/webpack --optimize-minimize",
-    "serve": "./node_modules/.bin/webpack-dev-server --content-base ./app/ --inline --hot --colors --progress",
-    "start": "electron ./app/electron-main.js",
+    "dev": "./node_modules/.bin/webpack-dev-server --inline --hot --colors --content-base src ./src/index.js",
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chrisisler/ErxiDesk.git"
   },
+  "keywords": [
+    "erxidesk",
+    "electron",
+    "react"
+  ],
   "author": "Chris Isler",
   "license": "ISC",
   "bugs": {
@@ -20,31 +24,19 @@
   },
   "homepage": "https://github.com/chrisisler/ErxiDesk#readme",
   "devDependencies": {
+    "babel": "^6.5.2",
     "babel-core": "^6.18.2",
     "babel-loader": "^6.2.8",
-    "babel-plugin-add-module-exports": "^0.2.1",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-react": "^6.16.0",
-    "css-loader": "^0.26.0",
     "electron": "^1.4.10",
-    "extract-text-webpack-plugin": "^1.0.1",
-    "node-sass": "^3.13.0",
-    "react": "^15.4.1",
-    "react-dom": "^15.4.1",
-    "sass-loader": "^4.0.2",
-    "style-loader": "^0.13.1",
+    "hammer": "0.0.5",
+    "ramda": "^0.22.1",
     "webpack": "^1.13.3",
     "webpack-dev-server": "^1.16.2"
   },
-  "dependencies": {},
-  "keywords": [
-    "react",
-    "babel",
-    "es2015",
-    "webpack",
-    "sass",
-    "es6",
-    "electron",
-    "erxidesk"
-  ]
+  "dependencies": {
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1"
+  }
 }

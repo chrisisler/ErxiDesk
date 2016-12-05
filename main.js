@@ -12,6 +12,7 @@ process.on('uncaughtException', (error) =>
 
 const {app, BrowserWindow} = require('electron');
 
+// Global reference to the (main) window object.
 let mainWindow = null;
 
 const WINDOW_MIN_WIDTH = 800;
@@ -34,14 +35,21 @@ function createWindow()
         width: WINDOW_DEFAULT_WIDTH,
         height: WINDOW_DEFAULT_HEIGHT,
         autoHideMenuBar: true,
-        title: 'ErxiDesk',
-        // icon goes here
+        title: 'ErxiDesk'
     };
 
     mainWindow = new BrowserWindow(windowOptions);
 
-    // Load index.html from port 8080 (hosted by webpack-dev-server).
+    // Load index.html from webpack-dev-server at http://localhost:8080/
     mainWindow.loadURL('http://localhost:8080/');
+
+    // Load index.html
+    // mainWindow.loadURL(Url.format(
+    // {
+    //     pathname: Path.join(__dirname, './index.html'),
+    //     protocol: 'file:',
+    //     slashes: true
+    // }));
 
     // Automatically open Chromium DevTools.
     mainWindow.webContents.openDevTools();
