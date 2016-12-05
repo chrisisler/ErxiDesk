@@ -1,16 +1,14 @@
-const React = require('react');
-const ReactDom = require('react-dom');
+'use strict';
 
-class Fake extends React.Component
-{
-    render()
-    {
-        return (
-            <h1>Its working!</h1>
-        );
-    }
-}
+const React = require('react'),
+      ReactDom = require('react-dom');
 
+/**
+ * All components from ./components/ are required and rendered here.
+ */
+const Processes = require('./components/processes/Processes.js');
 
-ReactDom.render(<Fake />, document.getElementById('app'));
+ReactDom.render(<Processes/>, document.getElementById('processes'));
 
+// thing
+//

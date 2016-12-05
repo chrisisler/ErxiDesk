@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "./node_modules/.bin/webpack-dev-server --inline --hot --colors --content-base src ./src/index.js",
     "start": "electron .",
+    "rebuild": "./node_modules/.bin/electron-rebuild",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
