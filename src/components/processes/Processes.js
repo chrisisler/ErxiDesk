@@ -3,35 +3,36 @@
 // Internal imports.
 const { getProcesses, PROCESS_KEYS } = require('./getProcesses.js');
 const ProcessData = require('./process-data/ProcessData.js');
+const ProcessHeader = require('./process-header/ProcessHeader.js');
 
 // External imports.
 const React = require('react');
 
-let processes = getProcesses();
-
-// Each item in an array should have a unique <key> prop.
-
 class Processes extends React.Component
 {
-    constructor()
+    constructor(props)
     {
-        super();
-        this.state = { processes };
+        super(props);
+
+        // If you do not use <state.foo> in render, it should not be on the state.
+        this.state =
+        {
+            processes: getProcesses()
+        };
     }
 
     render()
     {
         return (
             <div className='container'>
-                <table className='highlight centered'>
+                <table className='highlight centered css-process-wrap'>
 
                     <thead className='css-process-header-wrap'>
                         <tr>
-                            <th className='css-process-header-title'>Name</th>
-                            <th className='css-process-header-title'>Process ID</th>
-                            <th className='css-process-header-title'>Session Name</th>
-                            <th className='css-process-header-title'>Session #</th>
-                            <th className='css-process-header-title'>Memory Usage</th>
+                            {PROCESS_KEYS.map(function(procKey, index, array)
+                            {
+                                return <ProcessHeader key={index} title={procKey} />
+                            })}
                         </tr>
                     </thead>
 

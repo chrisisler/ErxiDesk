@@ -2,35 +2,43 @@
 
 @import "../../sass/config";
 
-.css-process-header-wrap
+@mixin highlight-background()
 {
-    cursor: default;
-    border-bottom: none;
+    @extend .blue-grey, .darken-3;
+}
 
-    @extend .z-depth-1;
-
-    .css-process-header-title
+.css-process-wrap
+{
+    .css-process-header-wrap
     {
-        transition: background-color .25s ease;
+        border-bottom: none;
+
+        @extend .z-depth-1;
+
+        .css-process-header-title
+        {
+            transition: background-color .25s ease;
+
+            &:hover
+            {
+                cursor: pointer;
+                @include highlight-background();
+            }
+        }
+    }
+
+    .css-process-data
+    {
+        a
+        {
+            @include text();
+        }
 
         &:hover
         {
-            @extend .blue-grey, .darken-3;
+            cursor: default;
+            @include highlight-background();
         }
-    }
-}
-
-.css-process-data
-{
-    a
-    {
-        @include text();
-    }
-
-    &:hover
-    {
-        cursor: default;
-        @extend .blue-grey, .darken-3;
     }
 }
 
