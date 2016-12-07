@@ -6,12 +6,12 @@
 // External imports.
 const React = require('react');
 
-class Process extends React.Component
+class ProcessData extends React.Component
 {
     render()
     {
         return (
-            <tr>
+            <tr className='css-process-data'>
                 <td><a>{this.props.name}</a></td>
                 <td><a>{this.props.pid}</a></td>
                 <td><a>{this.props.sessionName}</a></td>
@@ -22,5 +22,5 @@ class Process extends React.Component
     }
 }
 
-module.exports = Process;
+module.exports = ProcessData;
 

@@ -2,7 +2,7 @@
 
 // Internal imports.
 const { getProcesses, PROCESS_KEYS } = require('./getProcesses.js');
-const Process = require('./process/Process.js');
+const ProcessData = require('./process-data/ProcessData.js');
 
 // External imports.
 const React = require('react');
@@ -25,20 +25,20 @@ class Processes extends React.Component
             <div className='container'>
                 <table className='highlight centered'>
 
-                    <thead>
+                    <thead className='css-process-header-wrap'>
                         <tr>
-                            <th>Name</th>
-                            <th>Process ID</th>
-                            <th>Session Name</th>
-                            <th>Session #</th>
-                            <th>Memory Usage</th>
+                            <th className='css-process-header-title'>Name</th>
+                            <th className='css-process-header-title'>Process ID</th>
+                            <th className='css-process-header-title'>Session Name</th>
+                            <th className='css-process-header-title'>Session #</th>
+                            <th className='css-process-header-title'>Memory Usage</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         {this.state.processes.map(function(proc, index, array)
                         {
-                            return <Process
+                            return <ProcessData
                                 key={index}
                                 name={proc.name}
                                 pid={proc.pid}

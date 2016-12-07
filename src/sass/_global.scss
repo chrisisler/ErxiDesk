@@ -1,0 +1,16 @@
+@charset  "UTF-8";
+
+@import "../sass/config";
+
+html, body
+{
+    height: 100%;
+    font-weight: 300;
+}
+
+.css-body-wrap
+{
+    @include background();
+    @include text();
+}
+

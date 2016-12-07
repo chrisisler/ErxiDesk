@@ -10,5 +10,4 @@ const Processes = require('./components/processes/Processes.js');
 
 ReactDom.render(<Processes/>, document.getElementById('processes'));
 
-// thing
-//
+

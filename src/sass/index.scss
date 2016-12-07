@@ -1,0 +1,8 @@
+@charset  "UTF-8";
+
+// Import global (component-independent) styles.
+@import "./global";
+
+// Import styles per component.
+@import "../components/processes/processes";
+

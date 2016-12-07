@@ -1,0 +1,18 @@
+@charset  "UTF-8";
+
+// Imports must be in this order (see materialize.scss).
+@import "../materialize/components/color";
+@import "../materialize/components/variables";
+@import "../materialize/components/global";
+@import "../materialize/components/typography";
+
+@mixin text()
+{
+    @extend .blue-grey-text, .text-lighten-3;
+}
+
+@mixin background()
+{
+    @extend .blue-grey, .darken-4;
+}
+

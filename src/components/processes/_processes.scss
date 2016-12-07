@@ -1,0 +1,36 @@
+@charset  "UTF-8";
+
+@import "../../sass/config";
+
+.css-process-header-wrap
+{
+    cursor: default;
+    border-bottom: none;
+
+    @extend .z-depth-1;
+
+    .css-process-header-title
+    {
+        transition: background-color .25s ease;
+
+        &:hover
+        {
+            @extend .blue-grey, .darken-3;
+        }
+    }
+}
+
+.css-process-data
+{
+    a
+    {
+        @include text();
+    }
+
+    &:hover
+    {
+        cursor: default;
+        @extend .blue-grey, .darken-3;
+    }
+}
+
