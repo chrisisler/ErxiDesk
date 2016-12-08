@@ -1,9 +1,7 @@
 /**
  * This file exports a list of objects representing the
  * currently running processes on this machine.
- */
-
-/**
+ *
  * 1. Grab processes on this computer with `tasklist`.
  * 2. Create functions to filter the processes (via pipeline).
  * 3. Return the filtered processes.
@@ -25,22 +23,19 @@ const getProcessesAsArrays = R.pipe(
     R.map(process => JSON.parse('[' + process + ']'))
 );
 
-// Input from <getProcessesAsArrays()>.
-const getProcessesAsObjects = R.pipe(
-    R.map(processAsArray =>
+const getProcessesAsObjects = R.map(processAsArray =>
+{
+    const processAsObject = {};
+    processAsArray.forEach((processValue, index, array) =>
     {
-        const processAsObject = {};
-        processAsArray.forEach((processValue, index, array) =>
-        {
-            // In <PROCESS_KEYS>, the elements are ordered the same as the column
-            // headers when executing the `tasklist` command on a Windows machine.
-            // These names are used as keys to convert each process from a list
-            // of values to an object with key-value pairs.
-            processAsObject[PROCESS_KEYS[index]] = processValue;
-        });
-        return processAsObject;
-    })
-);
+        // In <PROCESS_KEYS>, the elements are ordered the same as the column
+        // headers when executing the `tasklist` command on a Windows machine.
+        // These names are used as keys to convert each process from a list
+        // of values to an object with key-value pairs.
+        processAsObject[PROCESS_KEYS[index]] = processValue;
+    });
+    return processAsObject;
+});
 
 // Convert process.pid from (string) '8442' to (number) 8442.
 // Also convert process.sessionNumber to a number.

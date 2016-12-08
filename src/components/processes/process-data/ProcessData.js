@@ -1,7 +1,7 @@
 'use strict';
 
 // Internal imports.
-// const Util = require('../../../js/util.js');
+const R = require('ramda');
 
 // External imports.
 const React = require('react');
@@ -11,6 +11,18 @@ class ProcessData extends React.Component
     constructor(props)
     {
         super(props);
+
+        this.state =
+        {
+            processDataValues:
+            [
+                this.props.name,
+                this.props.pid,
+                this.props.sessionName,
+                this.props.sessionNumber,
+                this._convertMemUseToString(this.props.memoryUsage)
+            ]
+        };
     }
 
     _convertMemUseToString(memUse)
