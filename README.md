@@ -1,19 +1,17 @@
 # ErxiDesk
 
-This repository contains the ErxiDesk core application.
+A clean interface for things I do in the terminal.
 
 ## About
 
 ErxiDesk is a Windows desktop app built with Electron + React.
 
-### What does ErxiDesk do?
-
 ErxiDesk allows users to do the following all from a clean interface:
-[x] Start, monitor, and kill processes
-[ ] Traverse through directories
-[ ] Play music, videos, and view images
-[ ] Set reminders
-[ ] TBD
+- [x] Start, monitor, and kill processes
+- [ ] Traverse through directories
+- [ ] Play music, videos, and view images
+- [ ] Set reminders
+- [ ] TBD
 
 ## Build
 - ```npm install```
@@ -42,11 +40,10 @@ ErxiDesk allows users to do the following all from a clean interface:
 - Add dropdown option to hide this current process (with that unique PID) and/or hide all processes of that name (using R.whereEq or R.without)
 
 - ProcessData dropdown:
-    - Display:
-    - Actions:
     * Summarize this process
         - Group all processes of this name into one super process, marked with a symbol (*) somehow
         - Display an aggregate/total memory usage sum
         - Add a 'css-' class for this aggregate process to change text color or make it different somehow
     * Kill this process (PID: NNNN)
     * Kill all N <process name> processes
+
