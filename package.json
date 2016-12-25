@@ -7,7 +7,7 @@
     "dev": "./node_modules/.bin/webpack-dev-server --inline --hot --colors --content-base src ./src/index.js",
     "start": "electron .",
     "sass-dev": "sass --watch --no-cache ./src/sass/",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
     "babel-preset-react": "^6.16.0",
     "electron": "^1.4.10",
     "hammer": "0.0.5",
+    "jquery": "^3.1.1",
     "ramda": "^0.22.1",
     "webpack": "^1.13.3",
     "webpack-dev-server": "^1.16.2"

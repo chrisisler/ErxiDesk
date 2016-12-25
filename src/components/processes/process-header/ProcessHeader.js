@@ -36,10 +36,10 @@ class ProcessHeader extends React.Component
     }
 
     /**
-     * Handles left-click sorting of process data based on clicked header.
+     * Sorts <processes> based on which header title was clicked.
      * @param event - A synthetic JavaScript event.
      */
-    handleClick(event)
+    handleLeftClick(event)
     {
         const keyToSortBy = event.target.id;
 
@@ -53,7 +53,7 @@ class ProcessHeader extends React.Component
         return (
             <th
                 className='css-process-header-title'
-                onClick={this.handleClick.bind(this)}
+                onClick={this.handleLeftClick.bind(this)}
                 id={this.props.procKey}
             >
                 {this._getPrettyTitleFromKey(this.props.procKey)}

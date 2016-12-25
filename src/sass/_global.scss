@@ -14,3 +14,7 @@ html, body
     @include text();
 }
 
+a
+{
+    @include text();
+}

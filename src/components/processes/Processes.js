@@ -15,9 +15,8 @@ class Processes extends React.Component
     {
         super(props);
 
-        // If you do not use <state.foo> in render, it should not be on the state.
-        this.state =
-        {
+        // Note: If it is not used in render(), it should not be in the state.
+        this.state = {
             processes: getProcesses()
         };
     }
@@ -53,6 +52,33 @@ class Processes extends React.Component
 
         const sortedProcesses = getProcessesSortedByKey(processes);
         this.setState({ processes: sortedProcesses });
+    }
+
+    getSummarizedProcess(processName)
+    {
+        const processesOfThisName = R.filter(R.propEq('name', processName))(this.state.processes);
+
+        if (processesOfThisName.length === 1) { return processesOfThisName[0]; }
+
+        const summarizedProcess = {
+            name: processName,
+            pids: R.map(procOfThisName => procOfThisName.pid)(processesOfThisName),
+            sessionName: processesOfThisName[0].sessionName,
+            sessionNumber: processesOfThisName[0].sessionNumber,
+            memoryUsage: R.reduce((totalMemUse, proc) => totalMemUse + proc.memoryUsage, 0)(processesOfThisName),
+            numberOfOccurrences: R.length(processesOfThisName)
+        };
+
+        return summarizedProcess;
+    }
+
+    getTotalMemoryUsage(processName)
+    {
+        return R.pipe(
+            R.filter(proc => R.propEq('name', processName)(proc)),
+            R.map(proc => proc.memoryUsage),
+            R.reduce((memUse1, memUse2) => memUse1 + memUse2, 0)
+        )(this.state.processes);
     }
 
     render()

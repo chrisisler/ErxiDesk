@@ -29,11 +29,6 @@
 
     .css-process-data
     {
-        a
-        {
-            @include text();
-        }
-
         &:hover
         {
             cursor: default;

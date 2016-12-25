@@ -24,10 +24,7 @@ module.exports =
         path: __dirname + '/src',
         filename: "index.min.js"
     },
-    plugins:
-    [
-        // new webpack.IgnorePlugin(new RegExp('^(child_process)$'))
-    ],
+    plugins: [],
     target: 'electron'
 };
 
