@@ -5,7 +5,6 @@ const { PROCESS_KEYS } = require('../getProcesses.js');
 
 // External imports.
 const React = require('react');
-const R = require('ramda');
 
 class ProcessHeader extends React.Component
 {
@@ -25,7 +24,7 @@ class ProcessHeader extends React.Component
     _getPrettyTitleFromKey(processKey)
     {
         let prettyTitle;
-        R.range(0, 5).forEach((index) =>
+        [0, 1, 2, 3, 4].forEach((index) =>
         {
             if (processKey === PROCESS_KEYS[index])
             {
@@ -51,8 +50,7 @@ class ProcessHeader extends React.Component
     render()
     {
         return (
-            <th
-                className='css-process-header-title'
+            <th className='css-process-header'
                 onClick={this.handleLeftClick.bind(this)}
                 id={this.props.procKey}
             >

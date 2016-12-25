@@ -15,35 +15,31 @@ ErxiDesk is a Windows desktop app built with Electron + React.
 ## Build
 - ```npm install```
 
-## Run
+## Run + Develop
+- ```npm run dev```
 - ```npm start```
-
-## Develop
 
 ### Pre-requisites
 1. Ruby
 2. Sass
 
 ## To-do
-1. React refactor
-    - ProcessData dropdown:
-        * Summarize this process
-            - Group all processes of this name into one super process, marked with a symbol (*) somehow
-            - Display an aggregate/total memory usage sum
-            - Add a 'css-' class for this aggregate process to change text color or make it different somehow
-        * Kill this process (PID: NNNN)
-        * Kill all N <process name> processes
-2. Add ability to search for running processes
-3. Right click process property title to display dropdown with option to hide that column
-4. Show total number of processes running
-5. Add ability to actually kill a process in the dropdown menu
+1. ProcessData dropdown:
+    * Kill process <name> with PID <pid>
+    * Kill all N <name> processes
+    * Summarize this process
+        - Group all processes of this name into one super process, marked with a symbol (*) somehow
+        - Display an aggregate/total memory usage sum
+        - Add a 'css-' class for this aggregate process to change text color or make it different somehow
+1. Add ability to search for running processes
+1. Right click process property title to display dropdown with option to hide that column
+1. Show total number of processes running
+1. Add ability to actually kill a process in the dropdown menu
   - Add a visual notification to show pkill success/error (async?)
-6. Add status bar footer showing date, time, battery info, cpu info, etc
-7. Fix table header for processes
-8. Add button at bottom of processes table to scroll back to top
-9. Add option to show top N elements using R.take(N)
-10. Add option to remove duplicates and show summation of total memory usage
-11. Add dropdown option to hide this current process (with that unique PID) and/or hide all processes of that name (using R.whereEq or R.without)
-12. Add tabs/header
+1. Fix table header for processes
+1. Add button at bottom of processes table to scroll back to top
+1. Add option to show top N elements using R.take(N)
+1. Add dropdown option to hide this current process (with that unique PID) and/or hide all processes of that name (using R.whereEq or R.without)
+1. Add tabs/header
 
 

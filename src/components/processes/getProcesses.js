@@ -2,10 +2,9 @@
  * This file exports a list of objects representing the currently running
  * processes on this machine.
  *
- * Capture output from `tasklist` -> sanitize and organize -> return/export data.
+ * Capture `tasklist` output -> sanitize data -> export data.
  *
- * If you only care about what this file does and not how it does it, just read
- * the first function below: "getProcesses()"
+ * Just read the getProcesses() function at the bottom of this file.
  */
 
 'use strict';
@@ -16,43 +15,14 @@ const OS = require('os');
 
 const PROCESS_KEYS = [ 'name', 'pid', 'sessionName', 'sessionNumber', 'memoryUsage' ];
 
-function getProcesses()
+const _sanitizers = Object.freeze(
 {
-    // Get output from `tasklist` command as one big string.
-    const dirtyProcesses = CP.execSync('tasklist /fo csv /nh', { encoding: 'utf8' });
-
-    // The argument to each function in this pipeline below is <dirtyProcesses>.
-    // Each function below returns a function which acts on the output from the
-    //   previous function. (Do this, then do this, then do this, one at a time.)
-    // Clean up the data and return.
-    const sanitize = R.pipe(
-        _getProcessesAsArrays(),
-        _getProcessesAsObjects(),
-        _removeBrokenProcesses(),
-        _removeExeFromProcessNames(),
-        _convertPidAndSessionNumberToNumber(),
-        _convertMemoryUsageToNumber()
-    );
-
-    const cleanProcesses = sanitize(dirtyProcesses);
-    return cleanProcesses;
-}
-function _getProcessesAsArrays()
-{
-    return R.pipe(
+    getProcessesAsArrays: R.pipe(
         R.split(OS.EOL),
         R.map(proc => JSON.parse(`[${proc}]`))
-    );
-}
+    ),
 
-function getNewProcess()
-{
-    ;
-}
-
-function _getProcessesAsObjects()
-{
-    return R.map(procAsArray =>
+    getProcessesAsObjects: R.map(procAsArray =>
     {
         const procAsObject = {};
         procAsArray.forEach((procValue, index, array) =>
@@ -64,58 +34,70 @@ function _getProcessesAsObjects()
             procAsObject[PROCESS_KEYS[index]] = procValue;
         });
         return procAsObject;
-    });
-}
+    }),
 
-function _convertPidAndSessionNumberToNumber()
-{
-    return R.map((proc) =>
+    convertPidAndSessionNumberToNumber: R.map(proc => Object.assign(proc,
     {
-        proc.pid = Number.parseInt(proc.pid);
-        proc.sessionNumber = Number.parseInt(proc.sessionNumber);
-        return proc;
-    });
-}
+        pid: Number.parseInt(proc.pid),
+        sessionNumber: Number.parseInt(proc.sessionNumber)
+    })),
 
-function _convertMemoryUsageToNumber()
-{
-    return R.forEach((proc) =>
-    {
-        let memUse = proc.memoryUsage;
-        memUse = memUse.substr(0, memUse.length - 2);  // Remove ' K'.
-        memUse = memUse.replace(/,/, '');              // Remove ','.
-        proc.memoryUsage = Number.parseInt(memUse); // String to Integer.
-    });
-}
+    convertMemoryUsageToNumberMultiple: R.map(proc =>
+        convertMemoryUsageToNumber(proc, PROCESS_KEYS)
+    ),
 
-function _removeExeFromProcessNames()
-{
-    return R.forEach((proc) =>
-    {
-        if (proc.name.endsWith('.exe'))
-        {
-            proc.name = R.replace(/\.exe/i, '')(proc.name);
-        }
-    })
-}
+    removeExeFromProcessNames: R.map(proc =>
+        proc.name.endsWith('.exe')
+            ? Object.assign(proc, { [PROCESS_KEYS[0]]: proc.name.replace(/\.exe/i, '') })
+            : proc
+    ),
 
-// TODO: There's probably a better way to do this.
-function _removeBrokenProcesses()
-{
-    return R.filter(proc =>
+    removeBrokenProcesses: R.filter(proc =>
         !!proc.name
         && !!proc.pid
         && !!proc.sessionName
         && !!proc.sessionNumber
         && !!proc.memoryUsage
+    )
+});
+
+function convertMemoryUsageToNumber(proc, PROCESS_KEYS)
+{
+    const oldMemUse = proc.memoryUsage;
+    const newMemUse = Number.parseInt(
+        oldMemUse
+            .substr(0, oldMemUse.length - 2) // Remove " K"
+            .replace(/,/, '')
     );
+    return Object.assign(proc, { [PROCESS_KEYS[4]]: newMemUse });
+}
+
+function getProcesses()
+{
+    // Get output from `tasklist` command as one big string.
+    const dirtyProcesses = CP.execSync('tasklist /fo csv /nh', { encoding: 'utf8' });
+
+    // Each function below returns a function which acts on the output from the
+    //   previous function. (Do this, then do this, then do this, one at a time.)
+    // Clean up the data and return.
+    const sanitize = R.pipe(
+        _sanitizers.getProcessesAsArrays,
+        _sanitizers.getProcessesAsObjects,
+        _sanitizers.removeBrokenProcesses,
+        _sanitizers.removeExeFromProcessNames,
+        _sanitizers.convertPidAndSessionNumberToNumber,
+        _sanitizers.convertMemoryUsageToNumberMultiple
+    );
+
+    const cleanProcesses = sanitize(dirtyProcesses);
+    return cleanProcesses;
 }
 
 // ES6 object syntax
 module.exports =
 {
     getProcesses,
-    PROCESS_KEYS
+    PROCESS_KEYS,
+    convertMemoryUsageToNumber
 };
-
 

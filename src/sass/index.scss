@@ -1,8 +1,37 @@
-@charset  "UTF-8";
+@charset "UTF-8";
 
-// Import global (component-independent) styles.
-@import "./global";
+// Normalize
+@import "normalize";
 
-// Import styles per component.
+// Config: mixins and variables
+@import "config";
+
+// Components
 @import "../components/processes/processes";
+
+// Global styles
+html
+{
+    box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after
+{
+    box-sizing: inherit;
+}
+
+.css-body-wrap
+{
+    background-color: $base03;
+    color: $base0;
+}
+
+.container
+{
+  margin: 0 auto;
+  max-width: 1280px;
+  width: 90%;
+}
 

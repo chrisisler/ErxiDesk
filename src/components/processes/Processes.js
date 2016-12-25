@@ -31,7 +31,7 @@ class Processes extends React.Component
      * Sort and update <processes> sorted by a key, <keyToSortBy>.
      * @param {String} keyToSortBy - Key of a <process> object to sort by.
      * @param {Array} processes - Current processes running on this machine.
-     * @param {Boolean} doReverseOrder - If true, then sort descending (z-a).
+     * @param {Boolean} doReverseOrder - If true, then sort descending (z-a9-0).
      */
     sort(keyToSortBy, processes, doReverseOrder)
     {
@@ -51,35 +51,38 @@ class Processes extends React.Component
         );
 
         const sortedProcesses = getProcessesSortedByKey(processes);
-        this.setState({ processes: sortedProcesses });
+        const sortedProcessesState = Object.assign(this.state, {
+            processes: sortedProcesses
+        });
+        this.setState(sortedProcessesState);
     }
 
-    getSummarizedProcess(processName)
-    {
-        const processesOfThisName = R.filter(R.propEq('name', processName))(this.state.processes);
+    // getSummarizedProcess(processName)
+    // {
+    //     const processesOfThisName = R.filter(R.propEq('name', processName))(this.state.processes);
 
-        if (processesOfThisName.length === 1) { return processesOfThisName[0]; }
+    //     if (processesOfThisName.length === 1) return processesOfThisName[0];
 
-        const summarizedProcess = {
-            name: processName,
-            pids: R.map(procOfThisName => procOfThisName.pid)(processesOfThisName),
-            sessionName: processesOfThisName[0].sessionName,
-            sessionNumber: processesOfThisName[0].sessionNumber,
-            memoryUsage: R.reduce((totalMemUse, proc) => totalMemUse + proc.memoryUsage, 0)(processesOfThisName),
-            numberOfOccurrences: R.length(processesOfThisName)
-        };
+    //     const summarizedProcess = {
+    //         name: processName,
+    //         pids: R.map(procOfThisName => procOfThisName.pid)(processesOfThisName),
+    //         sessionName: processesOfThisName[0].sessionName,
+    //         sessionNumber: processesOfThisName[0].sessionNumber,
+    //         memoryUsage: R.reduce((totalMemUse, proc) => totalMemUse + proc.memoryUsage, 0)(processesOfThisName),
+    //         numberOfOccurrences: R.length(processesOfThisName)
+    //     };
 
-        return summarizedProcess;
-    }
+    //     return summarizedProcess;
+    // }
 
-    getTotalMemoryUsage(processName)
-    {
-        return R.pipe(
-            R.filter(proc => R.propEq('name', processName)(proc)),
-            R.map(proc => proc.memoryUsage),
-            R.reduce((memUse1, memUse2) => memUse1 + memUse2, 0)
-        )(this.state.processes);
-    }
+    // getTotalMemoryUsage(processName)
+    // {
+    //     return R.pipe(
+    //         R.filter(proc => R.propEq('name', processName)(proc)),
+    //         R.map(proc => proc.memoryUsage),
+    //         R.reduce((totalMemUse, memUse) => total + memUse, 0)
+    //     )(this.state.processes);
+    // }
 
     render()
     {
@@ -87,7 +90,7 @@ class Processes extends React.Component
 
         return (
             <div className='container'>
-                <table className='highlight centered css-process-wrap'>
+                <table className='css-process-wrap'>
 
                     <thead className='css-process-header-wrap'>
                         <tr>

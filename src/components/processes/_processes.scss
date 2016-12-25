@@ -1,39 +1,42 @@
-@charset  "UTF-8";
+@charset "UTF-8";
 
-@import "../../sass/config";
-
-@mixin highlight-background()
+table.css-process-wrap
 {
-    @extend .blue-grey, .darken-3;
-}
+    width: 100%;
+    display: table;
+    text-align: center;
+    border: none;
+    border-collapse: collapse;
 
-.css-process-wrap
-{
-    .css-process-header-wrap
+    thead.css-process-header-wrap
     {
-        border-bottom: none;
-
         @extend .z-depth-1;
-
-        .css-process-header-title
-        {
-            transition: background-color .25s ease;
-
-            &:hover
-            {
-                cursor: pointer;
-                @include highlight-background();
-            }
-        }
     }
 
-    .css-process-data
+    td,
+    th.css-process-header
     {
+        padding: 15px 5px;
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    th.css-process-header
+    {
+        cursor: pointer;
+        color: $base2;
+    }
+
+    tr.css-process-data,
+    th.css-process-header
+    {
+        transition: background-color .25s ease;
+
         &:hover
         {
-            cursor: default;
-            @include highlight-background();
+            background-color: $base02;
         }
     }
 }
+
 

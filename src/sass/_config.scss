@@ -1,18 +1,54 @@
-@charset  "UTF-8";
+@charset "UTF-8";
 
-// Imports must be in this order (see materialize.scss).
-@import "../materialize/components/color";
-@import "../materialize/components/variables";
-@import "../materialize/components/global";
-@import "../materialize/components/typography";
+// Solarized color scheme: http://ethanschoonover.com/solarized
 
-@mixin text()
+$base03:    #002b36 !default;
+$base02:    #073642 !default;
+$base01:    #586e75 !default;
+$base00:    #657b83 !default;
+$base0:     #839496 !default;
+$base1:     #93a1a1 !default;
+$base2:     #eee8d5 !default;
+$base3:     #fdf6e3 !default;
+
+$yellow:    #b58900 !default;
+$orange:    #cb4b16 !default;
+$red:       #dc322f !default;
+$magenta:   #d33682 !default;
+$violet:    #6c71c4 !default;
+$blue:      #268bd2 !default;
+$cyan:      #2aa198 !default;
+$green:     #859900 !default;
+
+// Box shadow levels
+
+// Z-levels
+.z-depth-0
 {
-    @extend .blue-grey-text, .text-lighten-3;
+  box-shadow: none !important;
 }
-
-@mixin background()
+.z-depth-1
 {
-    @extend .blue-grey, .darken-4;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2);
+}
+.z-depth-1-half
+{
+  box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.14), 0 1px 7px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -1px rgba(0, 0, 0, 0.2);
+}
+.z-depth-2
+{
+  box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+}
+.z-depth-3
+{
+  box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.3);
+}
+.z-depth-4
+{
+  box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.3);
+}
+.z-depth-5
+{
+  box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.3);
 }
 
