@@ -23,8 +23,8 @@ class Processes extends React.Component
 
     componentDidMount()
     {
-        // Sort <processes> by memoryUsage property by default.
-        this.sort(PROCESS_KEYS[4], this.state.processes, true);
+        const memoryUsage = PROCESS_KEYS[4];
+        this.sort(memoryUsage, this.state.processes, true);
     }
 
     /**
@@ -51,77 +51,57 @@ class Processes extends React.Component
         );
 
         const sortedProcesses = getProcessesSortedByKey(processes);
-        const sortedProcessesState = Object.assign(this.state, {
+        const newSortedProcessesState = Object.assign(this.state, {
             processes: sortedProcesses
         });
-        this.setState(sortedProcessesState);
+
+        this.setState(newSortedProcessesState);
     }
 
-    // getSummarizedProcess(processName)
-    // {
-    //     const processesOfThisName = R.filter(R.propEq('name', processName))(this.state.processes);
+    renderProcessHeaders(PROCESS_KEYS)
+    {
+        const self = this;
 
-    //     if (processesOfThisName.length === 1) return processesOfThisName[0];
+        return PROCESS_KEYS.map((procKey, index, array) =>
+            <ProcessHeader
+                key={index}
+                procKey={procKey}
+                sort={self.sort.bind(self)}
+                processes={self.state.processes}
+            />
+        );
+    }
 
-    //     const summarizedProcess = {
-    //         name: processName,
-    //         pids: R.map(procOfThisName => procOfThisName.pid)(processesOfThisName),
-    //         sessionName: processesOfThisName[0].sessionName,
-    //         sessionNumber: processesOfThisName[0].sessionNumber,
-    //         memoryUsage: R.reduce((totalMemUse, proc) => totalMemUse + proc.memoryUsage, 0)(processesOfThisName),
-    //         numberOfOccurrences: R.length(processesOfThisName)
-    //     };
-
-    //     return summarizedProcess;
-    // }
-
-    // getTotalMemoryUsage(processName)
-    // {
-    //     return R.pipe(
-    //         R.filter(proc => R.propEq('name', processName)(proc)),
-    //         R.map(proc => proc.memoryUsage),
-    //         R.reduce((totalMemUse, memUse) => total + memUse, 0)
-    //     )(this.state.processes);
-    // }
+    renderProcessData()
+    {
+        return this.state.processes.map((proc, index, array) =>
+            <ProcessData
+                key={index}
+                name={proc.name}
+                pid={proc.pid}
+                sessionName={proc.sessionName}
+                sessionNumber={proc.sessionNumber}
+                memoryUsage={proc.memoryUsage}
+            />
+        );
+    }
 
     render()
     {
         const self = this;
 
         return (
-            <div className='container'>
+            <div className='css-container'>
                 <table className='css-process-wrap'>
 
                     <thead className='css-process-header-wrap'>
                         <tr>
-                            {
-                                PROCESS_KEYS.map(function(procKey, index, array)
-                                {
-                                    return <ProcessHeader
-                                        key={index}
-                                        procKey={procKey}
-                                        sort={self.sort.bind(self)}
-                                        processes={self.state.processes}
-                                    />
-                                })
-                            }
+                            {self.renderProcessHeaders(PROCESS_KEYS)}
                         </tr>
                     </thead>
 
                     <tbody>
-                        {
-                            self.state.processes.map(function(proc, index, array)
-                            {
-                                return <ProcessData
-                                    key={index}
-                                    name={proc.name}
-                                    pid={proc.pid}
-                                    sessionName={proc.sessionName}
-                                    sessionNumber={proc.sessionNumber}
-                                    memoryUsage={proc.memoryUsage}
-                                />
-                            })
-                        }
+                        {self.renderProcessData()}
                     </tbody>
 
                 </table>
@@ -132,3 +112,29 @@ class Processes extends React.Component
 
 module.exports = Processes;
 
+// getSummarizedProcess(processName)
+// {
+//     const processesOfThisName = R.filter(R.propEq('name', processName))(this.state.processes);
+
+//     if (processesOfThisName.length === 1) return processesOfThisName[0];
+
+//     const summarizedProcess = {
+//         name: processName,
+//         pids: R.map(procOfThisName => procOfThisName.pid)(processesOfThisName),
+//         sessionName: processesOfThisName[0].sessionName,
+//         sessionNumber: processesOfThisName[0].sessionNumber,
+//         memoryUsage: R.reduce((totalMemUse, proc) => totalMemUse + proc.memoryUsage, 0)(processesOfThisName),
+//         numberOfOccurrences: R.length(processesOfThisName)
+//     };
+
+//     return summarizedProcess;
+// }
+
+// getTotalMemoryUsage(processName)
+// {
+//     return R.pipe(
+//         R.filter(proc => R.propEq('name', processName)(proc)),
+//         R.map(proc => proc.memoryUsage),
+//         R.reduce((totalMemUse, memUse) => total + memUse, 0)
+//     )(this.state.processes);
+// }

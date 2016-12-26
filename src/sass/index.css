@@ -456,7 +456,7 @@ html {
   background-color: #002b36;
   color: #839496; }
 
-.container {
+.css-container {
   margin: 0 auto;
   max-width: 1280px;
   width: 90%; }

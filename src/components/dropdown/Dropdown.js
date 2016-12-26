@@ -12,7 +12,7 @@ class Dropdown extends React.Component
     render()
     {
         return (
-            <ul id='js-process-data' className='dropdown-content'>
+            <ul className='css-dropdown'>
                 <li><a>Option 1</a></li>
                 <li><a>Option 2</a></li>
                 <li><a>Option 3</a></li>

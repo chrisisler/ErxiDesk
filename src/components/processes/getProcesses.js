@@ -24,16 +24,7 @@ const _sanitizers = Object.freeze(
 
     getProcessesAsObjects: R.map(procAsArray =>
     {
-        const procAsObject = {};
-        procAsArray.forEach((procValue, index, array) =>
-        {
-            // In <PROCESS_KEYS>, the elements are ordered the same as the column
-            // headers when executing the `tasklist` command on a Windows machine.
-            // These names are used as keys to convert each process from a list of
-            // values to an object.
-            procAsObject[PROCESS_KEYS[index]] = procValue;
-        });
-        return procAsObject;
+        return makeProcessObj(procAsArray, PROCESS_KEYS, elem => elem);
     }),
 
     convertPidAndSessionNumberToNumber: R.map(proc => Object.assign(proc,
@@ -61,6 +52,16 @@ const _sanitizers = Object.freeze(
     )
 });
 
+function makeProcessObj(array, PROCESS_KEYS, func)
+{
+    let processObj = {};
+    array.forEach((elem, index, array) =>
+    {
+        processObj[PROCESS_KEYS[index]] = func(elem);
+    });
+    return processObj;
+}
+
 function convertMemoryUsageToNumber(proc, PROCESS_KEYS)
 {
     const oldMemUse = proc.memoryUsage;
@@ -69,7 +70,7 @@ function convertMemoryUsageToNumber(proc, PROCESS_KEYS)
             .substr(0, oldMemUse.length - 2) // Remove " K"
             .replace(/,/, '')
     );
-    return Object.assign(proc, { [PROCESS_KEYS[4]]: newMemUse });
+    return Object.assign(proc, { memoryUsage: newMemUse });
 }
 
 function getProcesses()
@@ -98,6 +99,7 @@ module.exports =
 {
     getProcesses,
     PROCESS_KEYS,
-    convertMemoryUsageToNumber
+    convertMemoryUsageToNumber,
+    makeProcessObj
 };
 
