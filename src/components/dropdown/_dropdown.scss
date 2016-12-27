@@ -1,3 +1,40 @@
 @charset "UTF-8";
 
+div.css-dropdown-wrap
+{
+    // display: none;
+    position: absolute;
+    // overflow: auto; // TODO: Fix overflow
 
+    & > ul
+    {
+        z-index: 999;
+        position: absolute;
+        display: block;
+        list-style-type: none;
+        @extend .z-depth-1;
+        color: $base3;
+        background-color: $base02;
+        border-radius: 2px;
+        margin: 0;
+        padding: 4px 0;
+        min-width: 200px;
+        max-width: 500px;
+        width: max-content;
+
+        li
+        {
+            // clear: both;
+            cursor: pointer;
+            line-height: 1.5rem;
+            text-align: left;
+            padding: 8px 28px;
+            transition: background-color .25s ease;
+
+            &:hover
+            {
+                background-color: $blue;
+            }
+        }
+    }
+}

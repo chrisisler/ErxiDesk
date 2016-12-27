@@ -1,19 +1,20 @@
 'use strict';
 
-const {
-    PROCESS_KEYS,
-    convertMemoryUsageToNumber,
-    makeProcessObj
-} = require('../getProcesses.js');
-// const Dropdown = require('../../dropdown/Dropdown.js');
+const { PROCESS_KEYS, makeProcessObj } = require('../getProcesses.js');
+const Dropdown = require('../../dropdown/Dropdown.js');
 
-const React = require('react');
+const React = require('react'),
+      ReactDOM = require('react-dom');
+const R = require('ramda');
 
 class ProcessData extends React.Component
 {
     constructor(props)
     {
         super(props);
+
+        props.processData.memoryUsage =
+            props.processData.memoryUsage.toLocaleString() + ' K';
     }
 
     _convertMemUseToString(memUse)
@@ -21,23 +22,31 @@ class ProcessData extends React.Component
         return memUse.toLocaleString() + ' K';
     }
 
-    handleRightClick(event)
+    onRightClick(event)
     {
-        const processRowNodes = event.target.parentNode.childNodes;
-        const proc = makeProcessObj(processRowNodes, PROCESS_KEYS, elem => elem.textContent);
+        const procNodeList = event.target.parentNode.childNodes;
+        const proc = makeProcessObj(procNodeList, PROCESS_KEYS, node => node.textContent);
+        const mockActions = R.values(proc);
+        const dropdownComponent = <Dropdown actions={mockActions} x={event.clientX} y={event.clientY} />;
+
+        ReactDOM.render(dropdownComponent, document.getElementById('dropdown'));
+    }
+
+    renderProcessData()
+    {
+        let index = 1;
+        return R.pipe(
+            R.values,
+            R.map(procDataValue => <td key={index++}>{procDataValue}</td>)
+        )(this.props.processData);
     }
 
     render()
     {
-        const self = this;
         return (
             <tr className='css-process-data'
-                onContextMenu={self.handleRightClick.bind(self)}>
-                <td>{this.props.name}</td>
-                <td>{this.props.pid}</td>
-                <td>{this.props.sessionName}</td>
-                <td>{this.props.sessionNumber}</td>
-                <td>{this._convertMemUseToString(this.props.memoryUsage)}</td>
+                onContextMenu={this.onRightClick.bind(this)} >
+                {this.renderProcessData()}
             </tr>
         );
     }

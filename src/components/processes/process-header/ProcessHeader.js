@@ -18,25 +18,17 @@ class ProcessHeader extends React.Component
 
     /**
      * Private method that given a key of a <process>, returns a title (string).
-     * @returns prettyTitle - Example: memoryUsage -> Memory Usage
      * @private
+     * @returns prettyTitle - Example: memoryUsage -> Memory Usage
      */
     _getPrettyTitleFromKey(processKey)
     {
-        let prettyTitle;
-        [0, 1, 2, 3, 4].forEach((index) =>
-        {
-            if (processKey === PROCESS_KEYS[index])
-            {
-                prettyTitle = this.prettyTitles[index];
-            }
-        });
-        return prettyTitle;
+        return this.prettyTitles[PROCESS_KEYS.indexOf(processKey)];
     }
 
     /**
      * Sorts <processes> based on which header title was clicked.
-     * @param event - A synthetic JavaScript event.
+     * @param event - A (synthetic) JavaScript event.
      */
     handleLeftClick(event)
     {

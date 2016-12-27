@@ -1,12 +1,13 @@
 'use strict';
 
 const React = require('react'),
-      ReactDom = require('react-dom');
+      ReactDOM = require('react-dom');
 
-// All components from ./components/ are required and rendered here.
+/** All components from ./components/ are required and rendered here. */
+
 const Processes = require('./components/processes/Processes.js');
-const Dropdown = require('./components/dropdown/Dropdown.js');
+ReactDOM.render(<Processes/>, document.getElementById('processes'));
 
-ReactDom.render(<Processes/>, document.getElementById('processes'));
-ReactDom.render(<Dropdown/>, document.getElementById('dropdown'));
+// const Dropdown = require('./components/dropdown/Dropdown.js');
+// ReactDOM.render(<Dropdown/>, document.getElementById('dropdown'));
 

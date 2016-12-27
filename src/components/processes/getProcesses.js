@@ -1,10 +1,8 @@
 /**
- * This file exports a list of objects representing the currently running
- * processes on this machine.
+ * This file exports a list of the currently running processes on this machine.
+ * Just read the getProcesses() function at the bottom of this file.
  *
  * Capture `tasklist` output -> sanitize data -> export data.
- *
- * Just read the getProcesses() function at the bottom of this file.
  */
 
 'use strict';
@@ -15,6 +13,7 @@ const OS = require('os');
 
 const PROCESS_KEYS = [ 'name', 'pid', 'sessionName', 'sessionNumber', 'memoryUsage' ];
 
+// <_sanitizers> only contains functions that clean the processes from `tasklist`.
 const _sanitizers = Object.freeze(
 {
     getProcessesAsArrays: R.pipe(
@@ -27,7 +26,7 @@ const _sanitizers = Object.freeze(
         return makeProcessObj(procAsArray, PROCESS_KEYS, elem => elem);
     }),
 
-    convertPidAndSessionNumberToNumber: R.map(proc => Object.assign(proc,
+    convertPidAndSessionNumberToNumber: R.map(proc => Object.assign({}, proc,
     {
         pid: Number.parseInt(proc.pid),
         sessionNumber: Number.parseInt(proc.sessionNumber)
@@ -37,9 +36,9 @@ const _sanitizers = Object.freeze(
         convertMemoryUsageToNumber(proc, PROCESS_KEYS)
     ),
 
-    removeExeFromProcessNames: R.map(proc =>
+    removeExeFromNames: R.map(proc =>
         proc.name.endsWith('.exe')
-            ? Object.assign(proc, { [PROCESS_KEYS[0]]: proc.name.replace(/\.exe/i, '') })
+            ? Object.assign({}, proc, { name: proc.name.replace(/\.exe/i, '') })
             : proc
     ),
 
@@ -52,16 +51,29 @@ const _sanitizers = Object.freeze(
     )
 });
 
+/**
+ * Returns a new <process> obj with keys from <array[i]> and values from func(array[i]).
+ * @param {Array[String|Number]} array - Items are keys of <newProcessObj>, in order.
+ * @param {Array[String]} PROCESS_KEYS - Array of keys of a <process> object.
+ * @param {Function} func - Given each <array[i]>, returns a value.
+ * @returns newProcessObj - A <process> object.
+ */
 function makeProcessObj(array, PROCESS_KEYS, func)
 {
-    let processObj = {};
+    let newProcessObj = {};
     array.forEach((elem, index, array) =>
     {
-        processObj[PROCESS_KEYS[index]] = func(elem);
+        newProcessObj[PROCESS_KEYS[index]] = func(elem);
     });
-    return processObj;
+    return newProcessObj;
 }
 
+/**
+ * Return a copy of the given <proc> with its memoryUsage property as a Number.
+ * @param {Object} proc - A <process> obj with memoryUsage property as a String.
+ * @param {Array[String|Number]} array - Array whose elements will be the values.
+ * @returns updatedProc - A <process> obj with memoryUsage property as a Number.
+ */
 function convertMemoryUsageToNumber(proc, PROCESS_KEYS)
 {
     const oldMemUse = proc.memoryUsage;
@@ -70,7 +82,8 @@ function convertMemoryUsageToNumber(proc, PROCESS_KEYS)
             .substr(0, oldMemUse.length - 2) // Remove " K"
             .replace(/,/, '')
     );
-    return Object.assign(proc, { memoryUsage: newMemUse });
+    const updatedProc = Object.assign({}, proc, { memoryUsage: newMemUse });
+    return updatedProc;
 }
 
 function getProcesses()
@@ -85,7 +98,7 @@ function getProcesses()
         _sanitizers.getProcessesAsArrays,
         _sanitizers.getProcessesAsObjects,
         _sanitizers.removeBrokenProcesses,
-        _sanitizers.removeExeFromProcessNames,
+        _sanitizers.removeExeFromNames,
         _sanitizers.convertPidAndSessionNumberToNumber,
         _sanitizers.convertMemoryUsageToNumberMultiple
     );
@@ -94,7 +107,6 @@ function getProcesses()
     return cleanProcesses;
 }
 
-// ES6 object syntax
 module.exports =
 {
     getProcesses,

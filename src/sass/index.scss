@@ -8,6 +8,7 @@
 
 // Components
 @import "../components/processes/processes";
+@import "../components/dropdown/dropdown";
 
 // Global styles
 html
@@ -26,12 +27,12 @@ html
 {
     background-color: $base03;
     color: $base0;
-}
 
-.css-container
-{
-  margin: 0 auto;
-  max-width: 1280px;
-  width: 90%;
+    .css-container
+    {
+        margin: 0 auto;
+        max-width: 1280px;
+        width: 90%;
+    }
 }
 

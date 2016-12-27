@@ -1,11 +1,10 @@
 'use strict';
 
-// Internal imports.
 const { getProcesses, PROCESS_KEYS } = require('./getProcesses.js');
 const ProcessData = require('./process-data/ProcessData.js');
 const ProcessHeader = require('./process-header/ProcessHeader.js');
+const Dropdown = require('../dropdown/Dropdown.js');
 
-// External imports.
 const React = require('react');
 const R = require('ramda');
 
@@ -15,25 +14,23 @@ class Processes extends React.Component
     {
         super(props);
 
-        // Note: If it is not used in render(), it should not be in the state.
-        this.state = {
-            processes: getProcesses()
-        };
-    }
-
-    componentDidMount()
-    {
+        const initialProcesses = getProcesses();
         const memoryUsage = PROCESS_KEYS[4];
-        this.sort(memoryUsage, this.state.processes, true);
+        const processesSortedByMemoryUsage = this.sort(initialProcesses, memoryUsage, true);
+
+        this.state = {
+            processes: processesSortedByMemoryUsage
+        };
     }
 
     /**
      * Sort and update <processes> sorted by a key, <keyToSortBy>.
-     * @param {String} keyToSortBy - Key of a <process> object to sort by.
      * @param {Array} processes - Current processes running on this machine.
+     * @param {String} keyToSortBy - Key of a <process> object to sort by.
      * @param {Boolean} doReverseOrder - If true, then sort descending (z-a9-0).
+     * @returns sortedProcesses - The given <processes> sorted by <keyToSortBy>.
      */
-    sort(keyToSortBy, processes, doReverseOrder)
+    sort(processes, keyToSortBy, doReverseOrder)
     {
         const sortValue = processes[0][keyToSortBy];
         const ifSortValueIsString = R.partial(R.is(String), [sortValue]);
@@ -50,14 +47,14 @@ class Processes extends React.Component
             reverseOrNot
         );
 
-        const sortedProcesses = getProcessesSortedByKey(processes);
-        const newSortedProcessesState = Object.assign(this.state, {
-            processes: sortedProcesses
-        });
-
-        this.setState(newSortedProcessesState);
+        return getProcessesSortedByKey(processes);
     }
 
+    /**
+     * Given the <PROCESS_KEYS>, return the <ProcessHeader> components.
+     * @param {Array[String]} PROCESS_KEYS - Array of keys of a <process> object.
+     * @returns {Array[<ProcessHeader>]} - The <ProcessHeader> UI components.
+     */
     renderProcessHeaders(PROCESS_KEYS)
     {
         const self = this;
@@ -72,17 +69,14 @@ class Processes extends React.Component
         );
     }
 
+    /**
+     * Accesses <self.state.processes> to return an array of <ProcessData> UI components.
+     * @returns {Array[<ProcessData>]} - The <ProcessData> UI components.
+     */
     renderProcessData()
     {
         return this.state.processes.map((proc, index, array) =>
-            <ProcessData
-                key={index}
-                name={proc.name}
-                pid={proc.pid}
-                sessionName={proc.sessionName}
-                sessionNumber={proc.sessionNumber}
-                memoryUsage={proc.memoryUsage}
-            />
+            <ProcessData key={index} processData={proc} />
         );
     }
 
@@ -111,6 +105,8 @@ class Processes extends React.Component
 }
 
 module.exports = Processes;
+
+// We'll use these methods (below) once the dropdown is working.
 
 // getSummarizedProcess(processName)
 // {

@@ -405,7 +405,7 @@ template {
 .z-depth-0 {
   box-shadow: none !important; }
 
-.z-depth-1, table.css-process-wrap thead.css-process-header-wrap {
+.z-depth-1, table.css-process-wrap thead.css-process-header-wrap, div.css-dropdown-wrap > ul {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2); }
 
 .z-depth-1-half {
@@ -444,6 +444,31 @@ table.css-process-wrap {
     table.css-process-wrap th.css-process-header:hover {
       background-color: #073642; }
 
+div.css-dropdown-wrap {
+  display: none;
+  position: absolute; }
+  div.css-dropdown-wrap > ul {
+    z-index: 999;
+    position: absolute;
+    display: block;
+    list-style-type: none;
+    color: #fdf6e3;
+    background-color: #073642;
+    border-radius: 2px;
+    margin: 0;
+    padding: 4px 0;
+    min-width: 200px;
+    max-width: 500px;
+    width: max-content; }
+    div.css-dropdown-wrap > ul li {
+      cursor: pointer;
+      line-height: 1.5rem;
+      text-align: left;
+      padding: 8px 28px;
+      transition: background-color .25s ease; }
+      div.css-dropdown-wrap > ul li:hover {
+        background-color: #268bd2; }
+
 html {
   box-sizing: border-box; }
 
@@ -455,10 +480,9 @@ html {
 .css-body-wrap {
   background-color: #002b36;
   color: #839496; }
-
-.css-container {
-  margin: 0 auto;
-  max-width: 1280px;
-  width: 90%; }
+  .css-body-wrap .css-container {
+    margin: 0 auto;
+    max-width: 1280px;
+    width: 90%; }
 
 /*# sourceMappingURL=index.css.map */

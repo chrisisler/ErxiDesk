@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "./node_modules/.bin/webpack-dev-server --inline --hot --colors --content-base src ./src/index.js",
     "start": "electron .",
-    "sass-dev": "sass --watch --no-cache ./src/sass/",
-    "test": "mocha"
+    "sass-dev": "sass --watch --no-cache ./src/sass/"
   },
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chrisisler/ErxiDesk.git"
