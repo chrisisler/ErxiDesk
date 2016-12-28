@@ -445,7 +445,6 @@ table.css-process-wrap {
       background-color: #073642; }
 
 div.css-dropdown-wrap {
-  display: none;
   position: absolute; }
   div.css-dropdown-wrap > ul {
     z-index: 999;
