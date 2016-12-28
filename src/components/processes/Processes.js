@@ -16,7 +16,7 @@ class Processes extends React.Component
 
         const initialProcesses = getProcesses();
         const memoryUsage = PROCESS_KEYS[4];
-        const processesSortedByMemoryUsage = this.sort(initialProcesses, memoryUsage, true);
+        const processesSortedByMemoryUsage = this.sortProcesses(initialProcesses, memoryUsage, true);
 
         this.state = {
             processes: processesSortedByMemoryUsage
@@ -24,13 +24,13 @@ class Processes extends React.Component
     }
 
     /**
-     * Sort and update <processes> sorted by a key, <keyToSortBy>.
+     * sortProcesses and update <processes> sorted by a key, <keyToSortBy>.
      * @param {Array} processes - Current processes running on this machine.
-     * @param {String} keyToSortBy - Key of a <process> object to sort by.
-     * @param {Boolean} doReverseOrder - If true, then sort descending (z-a9-0).
+     * @param {String} keyToSortBy - Key of a <process> object to sortProcesses by.
+     * @param {Boolean} doReverseOrder - If true, then sortProcesses descending (z-a9-0).
      * @returns sortedProcesses - The given <processes> sorted by <keyToSortBy>.
      */
-    sort(processes, keyToSortBy, doReverseOrder)
+    sortProcesses(processes, keyToSortBy, doReverseOrder)
     {
         const sortValue = processes[0][keyToSortBy];
         const ifSortValueIsString = R.partial(R.is(String), [sortValue]);
@@ -63,7 +63,7 @@ class Processes extends React.Component
             <ProcessHeader
                 key={index}
                 procKey={procKey}
-                sort={self.sort.bind(self)}
+                sortProcesses={self.sortProcesses.bind(self)}
                 processes={self.state.processes}
             />
         );
@@ -103,6 +103,9 @@ class Processes extends React.Component
         );
     }
 }
+
+Processes.propTypes = {};
+Processes.defaultProps = {};
 
 module.exports = Processes;
 

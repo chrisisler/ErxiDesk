@@ -1,9 +1,7 @@
 'use strict';
 
-// Internal imports.
 const { PROCESS_KEYS } = require('../getProcesses.js');
 
-// External imports.
 const React = require('react');
 
 class ProcessHeader extends React.Component
@@ -13,7 +11,13 @@ class ProcessHeader extends React.Component
         super(props);
 
         this.doReverseSort = false;
-        this.prettyTitles = [ 'Name', 'Process ID', 'Session Name', 'Session #', 'Memory Usage' ];
+        this.prettyTitles = [
+            'Name',
+            'Process ID',
+            'Session Name',
+            'Session #',
+            'Memory Usage'
+        ];
     }
 
     /**
@@ -34,7 +38,7 @@ class ProcessHeader extends React.Component
     {
         const keyToSortBy = event.target.id;
 
-        this.props.sort(keyToSortBy, this.props.processes, this.doReverseSort);
+        this.props.sortProcesses(keyToSortBy, this.props.processes, this.doReverseSort);
 
         this.doReverseSort = !this.doReverseSort;
     }
@@ -51,6 +55,18 @@ class ProcessHeader extends React.Component
         );
     }
 }
+
+ProcessHeader.propTypes = {
+    procKey: React.PropTypes.string,
+    sortProcesses: React.PropTypes.func,
+    processes: React.PropTypes.array
+};
+
+ProcessHeader.defaultProps = {
+    procKey: '',
+    sortProcesses: function() {},
+    processes: []
+};
 
 module.exports = ProcessHeader;
 

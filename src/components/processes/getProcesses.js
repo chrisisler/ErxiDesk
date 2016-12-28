@@ -22,9 +22,8 @@ const _sanitizers = Object.freeze(
     ),
 
     getProcessesAsObjects: R.map(procAsArray =>
-    {
-        return makeProcessObj(procAsArray, PROCESS_KEYS, elem => elem);
-    }),
+        makeProcessObj(procAsArray, PROCESS_KEYS, R.identity)
+    ),
 
     convertPidAndSessionNumberToNumber: R.map(proc => Object.assign({}, proc,
     {

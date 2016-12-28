@@ -26,8 +26,28 @@ class ProcessData extends React.Component
     {
         const procNodeList = event.target.parentNode.childNodes;
         const proc = makeProcessObj(procNodeList, PROCESS_KEYS, node => node.textContent);
-        const mockActions = R.values(proc);
-        const dropdownComponent = <Dropdown actions={mockActions} x={event.clientX} y={event.clientY} />;
+
+        const actions = [
+            {
+                text: 'action 1',
+                invoke: function()
+                {
+                    console.log('invoked action 1');
+                }
+            }, {
+                text: 'action 2',
+                invoke: function()
+                {
+                    console.log('invoked action 2');
+                }
+            }
+        ];
+
+        const dropdownComponent = <Dropdown
+            actions={actions}
+            x={event.clientX}
+            y={event.clientY}
+        />;
 
         ReactDOM.render(dropdownComponent, document.getElementById('dropdown'));
     }
@@ -51,6 +71,14 @@ class ProcessData extends React.Component
         );
     }
 }
+
+Dropdown.propTypes = {
+    processData: React.PropTypes.object,
+};
+
+Dropdown.defaultProps = {
+    processData: {}
+};
 
 module.exports = ProcessData;
 

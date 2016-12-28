@@ -1,12 +1,10 @@
-src/fonts
 node_modules
 
-src/sass/.sass-cache
-src/sass/.css.map
-src/sass/.css
-src/materialize
-src/fonts
+src/sass/*.sass-cache
+src/sass/*.css.map
+src/sass/*.css
 
 .sass-cache
+
 npm-debug.log
 
