@@ -1,3 +1,29 @@
+/**
+ * This dropdown component (sometimes called a "context menu") gets its options/actions
+ * from this.props.actions (an array of objects). Each "action" object is a text
+ * string that the end user can click, which will fire the given "invoke" property,
+ * a function.
+ *
+ * The user of this component builds an array of actions and injects that array as a prop.
+ *
+ * @example
+ *     
+ *     const newDropdownComponentInstance = <Dropdown
+ *         actions={[
+ *             {
+ *                 text: 'Say Hello',
+ *                 invoke: function() { console.log('Hello'); }
+ *             },
+ *             {
+ *                 text: 'whatever',
+ *                 invoke: functionWhichDoesCoolThings
+ *             }
+ *         ]}
+ *         x={event.clientX}
+ *         y={event.clientY}
+ *     />;
+ */
+
 'use strict';
 
 const React = require('react');
@@ -19,6 +45,20 @@ class Dropdown extends React.Component
         };
     }
 
+    /**
+     * This function is used externally to build action object to be placed in
+     * this.props.actions. (That can't be done internally because of `this` context.)
+     * @param {String} text - Describes to the end user what will happen when
+     * this action is clicked.
+     * @param {Function} invoke - The function that will be fired when this action
+     * is clicked.
+     * @returns {Object} - An object with properties "text" and "invoke".
+     */
+    static makeNewActionObj(text, invoke)
+    {
+        return { text, invoke };
+    }
+
     componentDidMount()
     {
         const self = this;
@@ -36,6 +76,11 @@ class Dropdown extends React.Component
         });
     }
 
+    /**
+     * This function is called whenever this component is rendered more than once.
+     * This function updates state with an updated copy.
+     * @param {Object} newProps - Updated properties.
+     */
     componentWillReceiveProps(newProps)
     {
         this.setState((previousState, previousProps) =>

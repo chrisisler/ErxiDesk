@@ -11,6 +11,7 @@ class ProcessHeader extends React.Component
         super(props);
 
         this.doReverseSort = false;
+
         this.prettyTitles = [
             'Name',
             'Process ID',
@@ -22,8 +23,8 @@ class ProcessHeader extends React.Component
 
     /**
      * Private method that given a key of a <process>, returns a title (string).
-     * @private
      * @returns prettyTitle - Example: memoryUsage -> Memory Usage
+     * @private
      */
     _getPrettyTitleFromKey(processKey)
     {
@@ -36,9 +37,12 @@ class ProcessHeader extends React.Component
      */
     handleLeftClick(event)
     {
-        const keyToSortBy = event.target.id;
+        const processKeyToSortProcessesBy = event.target.id;
 
-        this.props.sortProcesses(keyToSortBy, this.props.processes, this.doReverseSort);
+        this.props.sortProcesses(
+            processKeyToSortProcessesBy,
+            this.doReverseSort
+        );
 
         this.doReverseSort = !this.doReverseSort;
     }
@@ -59,13 +63,11 @@ class ProcessHeader extends React.Component
 ProcessHeader.propTypes = {
     procKey: React.PropTypes.string,
     sortProcesses: React.PropTypes.func,
-    processes: React.PropTypes.array
 };
 
 ProcessHeader.defaultProps = {
     procKey: '',
     sortProcesses: function() {},
-    processes: []
 };
 
 module.exports = ProcessHeader;
