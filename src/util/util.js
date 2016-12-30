@@ -1,6 +1,8 @@
 'use strict';
 
 module.exports = {
-    perProp: require('./perProp.js')
+    forEachProp: require('./forEachProp.js'),
+    mapProp: require('./mapProp.js'),
+    cloneArray: require('./cloneArray.js')
 };
 

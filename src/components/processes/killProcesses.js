@@ -2,26 +2,18 @@
 
 const CP = require('child_process');
 
-const processName = 'firefox';
-
-// sync solution
-try
+/**
+ * Wrapper around CP.exec().
+ * Given a process ID, <pid>, attempt to kill that process.
+ * @param {Number} pid - an ID of a <process> object.
+ * @param {Function} func - Callback.
+ */
+function killProcess(pid, func)
 {
-    // const output = CP.execSync(command, options);
-    // console.log('output is:', output);
-}
-catch (e)
-{
-    // console.log('e is:', e);
-}
-
-
-function killProcess(processName, func)
-{
-    const command = `taskkill /f /im ${processName}.exe`;
+    const command = `taskkill /pid ${pid}`;
     const options = { encoding: 'utf8' };
 
-    CP.exec(command, options, (error, stdout, stderr) =>
+    const defaultFunc = function(error, stdout, stderr)
     {
         if (error)
         {
@@ -36,8 +28,10 @@ function killProcess(processName, func)
         {
             console.log('stderr is:', stderr);
         }
-    });
+    };
+
+    CP.exec(command, options, func || defaultFunc);
 }
 
-killProcess(processName);
+module.exports = killProcess;
 

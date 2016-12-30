@@ -1,13 +1,15 @@
 'use strict';
 
 /**
- * Passes each key, value, index, and obj to the given function.
+ * Returns the result of passes each key, value, index, and obj to the given function.
+ * Like Array.prototype.map, but for the properties of an object.
  * @param {Object} obj - An object.
  * @param {Function} func - A function to call on each prop of <obj>.
  */
-module.exports = function perProp(obj, func)
+module.exports = function mapProp(obj, func)
 {
-    let index = 0;
+    let index = 0,
+        result = [];
 
     for (let key in obj)
     {
@@ -16,8 +18,9 @@ module.exports = function perProp(obj, func)
             const val = obj[key];
             const objCopy = Object.assign({}, obj);
 
-            func(key, val, index++, objCopy);
+            result.push(func(key, val, index++, objCopy));
         }
     }
+    return result;
 }
 

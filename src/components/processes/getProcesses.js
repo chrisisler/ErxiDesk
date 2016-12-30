@@ -25,14 +25,16 @@ const _sanitizers = Object.freeze(
         makeProcessObj(procAsArray, PROCESS_KEYS, R.identity)
     ),
 
-    convertPidAndSessionNumberToNumber: R.map(proc => Object.assign({}, proc,
-    {
-        pid: Number.parseInt(proc.pid),
-        sessionNumber: Number.parseInt(proc.sessionNumber)
-    })),
+    convertPidAndSessionNumberToNumber: R.map(proc =>
+        Object.assign({}, proc,
+        {
+            pid: Number.parseInt(proc.pid),
+            sessionNumber: Number.parseInt(proc.sessionNumber)
+        })
+    ),
 
     convertMemoryUsageToNumberMultiple: R.map(proc =>
-        convertMemoryUsageToNumber(proc, PROCESS_KEYS)
+        convertMemoryUsageToNumber(proc)
     ),
 
     removeExeFromNames: R.map(proc =>
@@ -64,6 +66,9 @@ function makeProcessObj(array, PROCESS_KEYS, func)
     {
         newProcessObj[PROCESS_KEYS[index]] = func(elem);
     });
+
+    newProcessObj = _sanitizers.convertPidAndSessionNumberToNumber([newProcessObj])[0];
+
     return newProcessObj;
 }
 
@@ -73,7 +78,7 @@ function makeProcessObj(array, PROCESS_KEYS, func)
  * @param {Array[String|Number]} array - Array whose elements will be the values.
  * @returns updatedProc - A <process> obj with memoryUsage property as a Number.
  */
-function convertMemoryUsageToNumber(proc, PROCESS_KEYS)
+function convertMemoryUsageToNumber(proc)
 {
     const oldMemUse = proc.memoryUsage;
     const newMemUse = Number.parseInt(
@@ -81,7 +86,9 @@ function convertMemoryUsageToNumber(proc, PROCESS_KEYS)
             .substr(0, oldMemUse.length - 2) // Remove " K"
             .replace(/,/, '')
     );
+
     const updatedProc = Object.assign({}, proc, { memoryUsage: newMemUse });
+
     return updatedProc;
 }
 

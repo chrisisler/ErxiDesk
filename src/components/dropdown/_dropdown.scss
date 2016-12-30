@@ -7,7 +7,7 @@ div.css-dropdown-wrap
 
     & > ul
     {
-        @extend .z-depth-1;
+        @extend .z-depth-2;
         z-index: 999;
         // position: absolute;
         display: block;

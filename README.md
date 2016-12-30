@@ -25,12 +25,19 @@ ErxiDesk is a Windows desktop app built with Electron + React.
 
 ## To-do
 1. ProcessData dropdown:
-    * Kill process <name> with PID <pid>
-    * Kill all N <name> processes
     * Summarize this process
         - Group all processes of this name into one super process, marked with a symbol (*) somehow
         - Display an aggregate/total memory usage sum
         - Add a 'css-' class for this aggregate process to change text color or make it different somehow
+1. Scss:
+    * Add a "hoverable" class mixin:
+        - Adds a 1px gray border
+        - darkens or lightens text-color via variable
+        - darkens or lightens background-color via variable
+    * Add a "clickable" class mixin:
+        - Sets background-color: $blue upon hover
+1. FIX: Scrolling displaces event.clientX and event.clientY by scroll amount -- use pageX/Y ???
+1. Add ability to refresh processes (with a clean UI button)
 1. Add ability to search for running processes
 1. Right click process property title to display dropdown with option to hide that column
 1. Show total number of processes running

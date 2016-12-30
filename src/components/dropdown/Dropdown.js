@@ -7,7 +7,7 @@
  * The user of this component builds an array of actions and injects that array as a prop.
  *
  * @example
- *     
+ *
  *     const newDropdownComponentInstance = <Dropdown
  *         actions={[
  *             {
@@ -19,8 +19,8 @@
  *                 invoke: functionWhichDoesCoolThings
  *             }
  *         ]}
- *         x={event.clientX}
- *         y={event.clientY}
+ *         x={event.pageX}
+ *         y={event.pageY}
  *     />;
  */
 
@@ -40,23 +40,46 @@ class Dropdown extends React.Component
 
         this.state = {
             display: 'block',
-            left: props.x,
-            top: props.y
+            left: this.props.x,
+            top: this.props.y
         };
     }
 
     /**
-     * This function is used externally to build action object to be placed in
+     * Builds an `action` object to be part of this.actions.
+     * This function is used to build action object to be placed in
      * this.props.actions. (That can't be done internally because of `this` context.)
-     * @param {String} text - Describes to the end user what will happen when
-     * this action is clicked.
-     * @param {Function} invoke - The function that will be fired when this action
-     * is clicked.
-     * @returns {Object} - An object with properties "text" and "invoke".
+     * @param {String} text - Describes what will happen when this action is clicked.
+     * @param {Array[Function]|Function} triggers - Function or list of functions to
+     *     invoke when this action is clicked.
+     * @returns {Object} - An `action` object.
+     * @static
      */
-    static makeNewActionObj(text, invoke)
+    static makeNewActionObj(text, triggers)
     {
-        return { text, invoke };
+        if (typeof triggers === typeof Function)
+        {
+            triggers = [ triggers ];
+        }
+        return Object.assign(Object.create(null), { text, triggers });
+    }
+
+    /**
+     * Uses Dropdown.makeNewActionObj to add an action to <actions>
+     * @param {Array[Object]} actions - List of actions for use as this.props.actions.
+     * @param {String} text - Describes what will happen when this action is clicked.
+     * @param {Array[Function]|Function} triggers - Function or list of functions to
+     *     invoke when this action is clicked.
+     * @returns {Array[Object]} - A copy of <actions> with <newAction> pushed.
+     * @static
+     */
+    static addAction(actions, text, triggers)
+    {
+        let actionsClone = actions.slice(0);
+        const newAction = Dropdown.makeNewActionObj(text, triggers);
+
+        actionsClone.push(newAction);
+        return actionsClone;
     }
 
     componentDidMount()
@@ -65,10 +88,10 @@ class Dropdown extends React.Component
 
         document.addEventListener('click', function(event)
         {
-            const eventOccurredWithinDropdown = [...event.target.classList.values]
+            const eventDidOccurInDropdown = [...event.target.classList.values]
                 .some(_class => _class === self.dropdownClass);
 
-            if (!eventOccurredWithinDropdown)
+            if (!eventDidOccurInDropdown)
             {
                 self.hideDropdown();
                 document.removeEventListener('click', this);
@@ -97,10 +120,16 @@ class Dropdown extends React.Component
         this.setState(Object.assign({}, this.state, { display: 'none' }));
     }
 
-    handleClick(func)
+    /**
+     * Hides dropdown and invokes all trigger functions in the given list of functions.
+     * @param {Array[Function]} triggers - A list of functions to invoke.
+     */
+    handleClick(triggers)
     {
         this.hideDropdown();
-        func();
+        triggers.forEach(trigger => {
+            trigger();
+        });
     }
 
     renderActions()
@@ -108,7 +137,7 @@ class Dropdown extends React.Component
         return this.props.actions.map((action, index, array) =>
             <li
                 key={index}
-                onClick={this.handleClick.bind(this, action.invoke)}
+                onClick={this.handleClick.bind(this, action.triggers)}
                 className={this.dropdownClass}
             >
                 {action.text}

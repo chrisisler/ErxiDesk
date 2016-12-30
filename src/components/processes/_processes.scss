@@ -21,17 +21,25 @@ table.css-process-wrap
         vertical-align: middle;
     }
 
-    th.css-process-header
-    {
-        cursor: pointer;
-        color: $base2;
-    }
-
     tr.css-process-data,
     th.css-process-header
     {
         transition: background-color .25s ease;
+    }
 
+    th.css-process-header
+    {
+        cursor: pointer;
+        color: $base2;
+
+        &:hover
+        {
+            background-color: $blue;
+        }
+    }
+
+    tr.css-process-data,
+    {
         &:hover
         {
             background-color: $base02;

@@ -4,6 +4,7 @@ const { getProcesses, PROCESS_KEYS } = require('./getProcesses.js');
 const ProcessData = require('./process-data/ProcessData.js');
 const ProcessHeader = require('./process-header/ProcessHeader.js');
 const Dropdown = require('../dropdown/Dropdown.js');
+const Util = require('../../util/util.js');
 
 const React = require('react');
 const R = require('ramda');
@@ -17,11 +18,37 @@ class Processes extends React.Component
         this.state = { processes: [] };
     }
 
+    /**
+     * Update this.state after removing the given <procsToRemove>.
+     * @param {Array[Number]} procsToRemove - Array of process objects.
+     */
+    removeProcesses(procsToRemove)
+    {
+        console.log(`Removing ${procsToRemove.map(p => p.name).join(', ')}`);
+
+        const _processes = R.without(procsToRemove, this.state.processes);
+
+        this.updateProcessesState.call(this, _processes);
+    }
+
+    /**
+     * Given the name of a process, return all processes in this.state.processes
+     * that share that name.
+     * @param {String} processName - The value of the name property of a proc obj.
+     * @returns {Array[Object]} - All procs with that name.
+     */
     getProcessesOfThisName(processName)
     {
         return this.state.processes.filter(p => p.name === processName);
     }
 
+    /**
+     * Given the name of a process, if there is more than one occurrence of that
+     * process, create aand return a custom process object from the combination
+     * of all processes of that name.
+     * @param {String} processName - Name of a process.
+     * @returns {Object} - A summarized "super" process.
+     */
     getSummarizedProcess(processName)
     {
         const allProcessesOfThisName = this.getProcessesOfThisName(processName);
@@ -37,7 +64,7 @@ class Processes extends React.Component
             sessionName: allProcessesOfThisName[0].sessionName,
             sessionNumber: allProcessesOfThisName[0].sessionNumber,
             memoryUsage: allProcessesOfThisName.reduce(
-                (totalMemUse, proc) => totalMemUse + proc.memoryUsage, 0
+                (totalMemUse, proc) => totalMemUse + proc.memoryUsage , 0
             ),
             numOccurrences: allProcessesOfThisName.length
         };
@@ -47,7 +74,8 @@ class Processes extends React.Component
 
     componentDidMount()
     {
-        this.sortProcesses('memoryUsage', true);
+        const doSortFromLastToFirst = true;
+        this.sortProcesses('memoryUsage', doSortFromLastToFirst);
     }
 
     /**
@@ -77,9 +105,19 @@ class Processes extends React.Component
             reverseOrNot
         );
 
+        const sortedProcs = getProcessesSortedByKey(_processes);
+        this.updateProcessesState(sortedProcs);
+    }
+
+    /**
+     * Given a new batch of process objects, <newProcesses>, update this.state.
+     * @param {Array[Object]} - New set of <processes> to call on this.setState().
+     */
+    updateProcessesState(newProcesses)
+    {
         this.setState((previousState, previousProps) =>
             Object.assign({}, previousState, {
-                processes: getProcessesSortedByKey(_processes)
+                processes: newProcesses
             })
         );
     }
@@ -102,39 +140,37 @@ class Processes extends React.Component
 
     /**
      * Accesses <this.state.processes> to return an array of <ProcessData>.
-     * @returns {Array[<ProcessData>]} - The <ProcessData> UI components.
+     * @param {Array[Object]} _processes - this.state.processes
+     * @returns {Array[<ProcessData>]} - Array of <ProcessData> UI components.
      */
-    renderProcessData()
+    renderProcessData(_processes)
     {
-        return this.state.processes.map((proc, index, array) =>
+        return _processes.map((proc, index, array) =>
         {
-            // proc.memoryUsage = proc.memoryUsage.toLocaleString() + ' K';
-
             return <ProcessData
                 key={index}
                 processData={proc}
                 getSummarizedProcess={this.getSummarizedProcess.bind(this)}
                 getProcessesOfThisName={this.getProcessesOfThisName.bind(this)}
+                removeProcesses={this.removeProcesses.bind(this)}
             />
         });
     }
 
     render()
     {
-        const self = this;
-
         return (
             <div className='css-container'>
                 <table className='css-process-wrap'>
 
                     <thead className='css-process-header-wrap'>
                         <tr>
-                            {self.renderProcessHeaders(PROCESS_KEYS)}
+                            {this.renderProcessHeaders(PROCESS_KEYS)}
                         </tr>
                     </thead>
 
                     <tbody>
-                        {self.renderProcessData()}
+                        {this.renderProcessData.call(this, this.state.processes)}
                     </tbody>
 
                 </table>
@@ -147,7 +183,6 @@ Processes.propTypes = {};
 Processes.defaultProps = {};
 
 module.exports = Processes;
-
 
 // getTotalMemoryUsage(processName)
 // {
