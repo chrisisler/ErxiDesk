@@ -26,7 +26,12 @@
 
 'use strict';
 
-const React = require('react');
+const React = require('react'),
+      ReactDOM = require('react-dom');
+
+// For this.state.visibility -- it's CSS.
+const on  = 'visible';
+const off = 'hidden';
 
 class Dropdown extends React.Component
 {
@@ -36,50 +41,52 @@ class Dropdown extends React.Component
 
         this.hideDropdown.bind(this);
 
-        this.dropdownClass = 'dropdown-menu';
+        this.dropdownClass = 'js-dropdown-menu';
 
         this.state = {
-            display: 'block',
+            visibility: on,
             left: this.props.x,
             top: this.props.y
         };
     }
 
     /**
-     * Builds an `action` object to be part of this.actions.
-     * This function is used to build action object to be placed in
-     * this.props.actions. (That can't be done internally because of `this` context.)
+     * Builds and returns an immutable `action` object to be part of this.props.actions.
      * @param {String} text - Describes what will happen when this action is clicked.
      * @param {Array[Function]|Function} triggers - Function or list of functions to
      *     invoke when this action is clicked.
      * @returns {Object} - An `action` object.
      * @static
      */
-    static makeNewActionObj(text, triggers)
+    static makeActionObj(text, triggers)
     {
+        const nullObj = Object.create(null);
+        const newAction = Object.assign(nullObj, { text, triggers });
+
         if (typeof triggers === typeof Function)
         {
             triggers = [ triggers ];
         }
-        return Object.assign(Object.create(null), { text, triggers });
+
+        return Object.freeze(newAction);
     }
 
     /**
-     * Uses Dropdown.makeNewActionObj to add an action to <actions>
-     * @param {Array[Object]} actions - List of actions for use as this.props.actions.
+     * Uses Dropdown.makeActionObj to return an array of actions.
+     * @param {Array[Object]} previousActions - List of actions for use as this.props.actions.
      * @param {String} text - Describes what will happen when this action is clicked.
      * @param {Array[Function]|Function} triggers - Function or list of functions to
      *     invoke when this action is clicked.
-     * @returns {Array[Object]} - A copy of <actions> with <newAction> pushed.
+     * @returns {Array[Object]} - A new array of actions with <newAction> added.
      * @static
      */
-    static addAction(actions, text, triggers)
+    static makeActions(previousActions, text, triggers)
     {
-        let actionsClone = actions.slice(0);
-        const newAction = Dropdown.makeNewActionObj(text, triggers);
+        let newActions = [...previousActions]; // Clone the array.
+        const newAction = Dropdown.makeActionObj(text, triggers);
 
-        actionsClone.push(newAction);
-        return actionsClone;
+        newActions.push(newAction);
+        return newActions;
     }
 
     componentDidMount()
@@ -88,6 +95,7 @@ class Dropdown extends React.Component
 
         document.addEventListener('click', function(event)
         {
+            // It works.
             const eventDidOccurInDropdown = [...event.target.classList.values]
                 .some(_class => _class === self.dropdownClass);
 
@@ -97,6 +105,32 @@ class Dropdown extends React.Component
                 document.removeEventListener('click', this);
             }
         });
+
+        this.avoidOverflow(this.state.left, this.state.top);
+    }
+
+    // Given x, y (coordinates of the top-left corner of the dropdown menu),
+    // attempts to keep the dropdown within window.innerWidth and window.innerHeight.
+    avoidOverflow(x, y)
+    {
+        const windowWidth = window.innerWidth;
+        const windowHeight = _getWindowHeight();
+
+        const dropdown = ReactDOM.findDOMNode(this);
+        const dropdownWidth = dropdown.offsetWidth;
+        const dropdownHeight = dropdown.offsetHeight;
+
+        const dropdownTotalX = dropdownWidth + x;
+        const dropdownTotalY = dropdownHeight + y;
+
+        if (dropdownTotalX > windowWidth) { x -= 250; }
+        if (dropdownTotalY > windowHeight) { y -= dropdownHeight; }
+
+        this.setState(Object.assign({}, this.state, {
+            visibility: on,
+            left: x,
+            top: y
+        }));
     }
 
     /**
@@ -106,18 +140,19 @@ class Dropdown extends React.Component
      */
     componentWillReceiveProps(newProps)
     {
-        this.setState((previousState, previousProps) =>
-            Object.assign({}, previousState, {
-                display: 'block',
-                left: newProps.x,
-                top: newProps.y
-            })
-        );
+        this.setState({
+            // visibility: on,
+            left: newProps.x,
+            top: newProps.y
+        });
+
+        this.avoidOverflow(newProps.x, newProps.y);
     }
 
+    /** I seriously hope I don't need to write docs for this function, ever. */
     hideDropdown()
     {
-        this.setState(Object.assign({}, this.state, { display: 'none' }));
+        this.setState({ visibility: off });
     }
 
     /**
@@ -132,9 +167,16 @@ class Dropdown extends React.Component
         });
     }
 
-    renderActions()
+    /**
+     * Given an array of action objects (from this.makeActionObj), map each of
+     * them to an html <li/> element with an onClick listener set to the
+     * action.invoke function property.
+     * @param {Array[Object]} _actions - Array of action objects.
+     * @returns {Array[<li/>]} - HTML <li/> elements.
+     */
+    renderActions(_actions)
     {
-        return this.props.actions.map((action, index, array) =>
+        return _actions.map((action, index, array) =>
             <li
                 key={index}
                 onClick={this.handleClick.bind(this, action.triggers)}
@@ -147,12 +189,13 @@ class Dropdown extends React.Component
 
     render()
     {
-        const self = this;
-
         return (
-            <div className={`css-dropdown-wrap ${self.dropdownClass}`} style={self.state}>
+            <div
+                className={`css-dropdown-wrap ${this.dropdownClass}`}
+                style={this.state}
+            >
                 <ul>
-                    {self.renderActions()}
+                    {this.renderActions(this.props.actions)}
                 </ul>
             </div>
         );
@@ -172,4 +215,23 @@ Dropdown.defaultProps = {
 };
 
 module.exports = Dropdown;
+
+/**
+ * Returns the current computer height for the entire HTML document.
+ * @returns {Number} - HTML height.
+ * @private
+ */
+function _getWindowHeight()
+{
+    const body = document.body,
+          html = document.documentElement;
+
+    return Math.max(
+        body.scrollHeight,
+        body.offsetHeight,
+        html.scrollHeight,
+        html.offsetHeight,
+        html.clientHeight
+    );
+}
 

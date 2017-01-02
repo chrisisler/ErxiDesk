@@ -20,15 +20,32 @@ class Processes extends React.Component
 
     /**
      * Update this.state after removing the given <procsToRemove>.
-     * @param {Array[Number]} procsToRemove - Array of process objects.
+     * @param {Array[Object]} procsToRemove - Array of process objects.
      */
     removeProcesses(procsToRemove)
     {
         console.log(`Removing ${procsToRemove.map(p => p.name).join(', ')}`);
 
-        const _processes = R.without(procsToRemove, this.state.processes);
+        const procsWithRemovedProcs = R.without(procsToRemove, this.state.processes);
 
-        this.updateProcessesState.call(this, _processes);
+        // TODO
+        console.log('procsWithRemovedProcs.indexOf(procsToRemove[0]) is:', procsWithRemovedProcs.indexOf(procsToRemove[0]));
+
+        this.updateProcessesState(procsWithRemovedProcs);
+    }
+
+    /**
+     * Adds the given <processesToInsert> to this.state.processes
+     * and updates this.state.
+     * @param {Array[Object]} processesToInsert - Array of process objects.
+     */
+    insertProcesses(processesToInsert)
+    {
+        const procsWithInsertedProcs = [...processesToInsert, ...this.state.processes];
+
+        this.updateProcessesState(procsWithInsertedProcs);
+
+        // Then call sortProcesses?? It isn't working. TODO.
     }
 
     /**
@@ -59,14 +76,13 @@ class Processes extends React.Component
         }
 
         const summarizedProcess = {
-            name: processName,
-            pids: allProcessesOfThisName.map(proc => proc.pid),
+            name: `${processName}* (${allProcessesOfThisName.length})`,
+            pid: 0,
             sessionName: allProcessesOfThisName[0].sessionName,
             sessionNumber: allProcessesOfThisName[0].sessionNumber,
             memoryUsage: allProcessesOfThisName.reduce(
                 (totalMemUse, proc) => totalMemUse + proc.memoryUsage , 0
-            ),
-            numOccurrences: allProcessesOfThisName.length
+            )
         };
 
         return summarizedProcess;
@@ -88,6 +104,7 @@ class Processes extends React.Component
     {
         // If this.state.processes has not been initialized, let this functions
         // working array of processes be a fresh copy from getProcesses().
+        // Note: This is probably not the smartest place to do that, but it works.
         const _processes = this.state.processes.length ? this.state.processes : getProcesses();
 
         const sortValue = _processes[0][keyToSortBy];
@@ -146,19 +163,25 @@ class Processes extends React.Component
     renderProcessData(_processes)
     {
         return _processes.map((proc, index, array) =>
-        {
-            return <ProcessData
+            <ProcessData
                 key={index}
                 processData={proc}
                 getSummarizedProcess={this.getSummarizedProcess.bind(this)}
                 getProcessesOfThisName={this.getProcessesOfThisName.bind(this)}
                 removeProcesses={this.removeProcesses.bind(this)}
+                insertProcesses={this.insertProcesses.bind(this)}
             />
-        });
+        );
     }
 
     render()
     {
+        // <div>
+        //     <a>Search Bar</a>
+        //     <a>Refresh Processes UI Button</a>
+        //     <a>Total Number of Processes</a>
+        // </div>
+
         return (
             <div className='css-container'>
                 <table className='css-process-wrap'>
@@ -170,7 +193,7 @@ class Processes extends React.Component
                     </thead>
 
                     <tbody>
-                        {this.renderProcessData.call(this, this.state.processes)}
+                        {this.renderProcessData(this.state.processes)}
                     </tbody>
 
                 </table>
@@ -183,13 +206,4 @@ Processes.propTypes = {};
 Processes.defaultProps = {};
 
 module.exports = Processes;
-
-// getTotalMemoryUsage(processName)
-// {
-//     return R.pipe(
-//         R.filter(proc => R.propEq('name', processName)(proc)),
-//         R.map(proc => proc.memoryUsage),
-//         R.reduce((totalMemUse, memUse) => total + memUse, 0)
-//     )(this.state.processes);
-// }
 

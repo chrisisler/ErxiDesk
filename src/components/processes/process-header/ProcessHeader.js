@@ -10,8 +10,6 @@ class ProcessHeader extends React.Component
     {
         super(props);
 
-        this.doReverseSort = false;
-
         this.prettyTitles = [
             'Name',
             'Process ID',
@@ -28,6 +26,7 @@ class ProcessHeader extends React.Component
      */
     _getPrettyTitleFromKey(processKey)
     {
+        // Dependent on ordering of <PROCESS_KEYS> found in getProcesses.js
         return this.prettyTitles[PROCESS_KEYS.indexOf(processKey)];
     }
 
@@ -62,7 +61,7 @@ class ProcessHeader extends React.Component
 
 ProcessHeader.propTypes = {
     procKey: React.PropTypes.string,
-    sortProcesses: React.PropTypes.func,
+    sortProcesses: React.PropTypes.func
 };
 
 ProcessHeader.defaultProps = {

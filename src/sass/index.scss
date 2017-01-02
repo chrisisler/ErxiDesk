@@ -7,8 +7,8 @@
 @import "config";
 
 // Components
-@import "../components/processes/processes";
-@import "../components/dropdown/dropdown";
+@import "../components/processes/Processes";
+@import "../components/dropdown/Dropdown";
 
 // Global styles
 html
@@ -23,16 +23,19 @@ html
     box-sizing: inherit;
 }
 
-.css-body-wrap
+body
 {
-    background-color: $base03;
-    color: $base0;
-
-    .css-container
+    div.css-body-wrap
     {
-        margin: 0 auto;
-        max-width: 1280px;
-        width: 90%;
+        background-color: $base03;
+        color: $base0;
+
+        div.css-container
+        {
+            margin: 0 auto;
+            max-width: 1280px;
+            width: 90%;
+        }
     }
 }
 

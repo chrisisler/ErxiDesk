@@ -1,48 +1,43 @@
 @charset "UTF-8";
 
+// A note about that "hoverable" class -> http://stackoverflow.com/questions/29211100
+
+.table-data-spacing
+{
+    padding: 15px 5px;
+    display: table-cell;
+    vertical-align: middle;
+}
+
 table.css-process-wrap
 {
     width: 100%;
+    border: none;
     display: table;
     text-align: center;
-    border: none;
     border-collapse: collapse;
 
     thead.css-process-header-wrap
     {
         @extend .z-depth-1;
-    }
 
-    td,
-    th.css-process-header
-    {
-        padding: 15px 5px;
-        display: table-cell;
-        vertical-align: middle;
-    }
-
-    tr.css-process-data,
-    th.css-process-header
-    {
-        transition: background-color .25s ease;
-    }
-
-    th.css-process-header
-    {
-        cursor: pointer;
-        color: $base2;
-
-        &:hover
+        th.css-process-header
         {
-            background-color: $blue;
+            @include clickable($blue);
+
+            @extend .table-data-spacing;
+
+            color: $base2;
         }
     }
 
     tr.css-process-data,
     {
-        &:hover
+        @include hoverable($base02);
+
+        td
         {
-            background-color: $base02;
+            @extend .table-data-spacing;
         }
     }
 }

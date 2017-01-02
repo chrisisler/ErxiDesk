@@ -64,7 +64,8 @@ function makeProcessObj(array, PROCESS_KEYS, func)
     let newProcessObj = {};
     array.forEach((elem, index, array) =>
     {
-        newProcessObj[PROCESS_KEYS[index]] = func(elem);
+        const key = PROCESS_KEYS[index];
+        newProcessObj[key] = func(elem);
     });
 
     newProcessObj = _sanitizers.convertPidAndSessionNumberToNumber([newProcessObj])[0];

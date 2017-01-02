@@ -2,19 +2,24 @@
 
 div.css-dropdown-wrap
 {
+    display: block;
     position: absolute;
     // overflow: auto; // TODO: Fix overflow
 
     & > ul
     {
-        @extend .z-depth-2;
-        z-index: 999;
         // position: absolute;
-        display: block;
-        list-style-type: none;
+
+        @extend .z-depth-2;
+
         color: $base3;
         background-color: $base02;
-        border-radius: 1px;
+
+        z-index: 999;
+        display: block;
+        list-style-type: none;
+        border-radius: 3px;
+
         margin: 0;
         padding: 4px 0;
 
@@ -27,16 +32,12 @@ div.css-dropdown-wrap
         li
         {
             // clear: both;
-            cursor: pointer;
+
             line-height: 1.5rem;
             text-align: left;
             padding: 8px 28px;
-            transition: background-color .25s ease;
 
-            &:hover
-            {
-                background-color: $blue;
-            }
+            @include clickable($blue);
         }
     }
 }
