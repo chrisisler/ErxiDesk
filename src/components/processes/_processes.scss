@@ -31,13 +31,24 @@ table.css-process-wrap
         }
     }
 
-    tr.css-process-data,
+    tr.css-process-data
     {
         @include hoverable($base02);
 
         td
         {
             @extend .table-data-spacing;
+        }
+
+        &.css-process-data.hidden
+        {
+            color: $base02;
+            transition: $base03;
+
+            &:hover
+            {
+                color: $base01;
+            }
         }
     }
 }

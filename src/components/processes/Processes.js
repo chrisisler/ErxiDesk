@@ -1,13 +1,15 @@
 'use strict';
 
 const { getProcesses, PROCESS_KEYS } = require('./getProcesses.js');
-const ProcessData = require('./process-data/ProcessData.js');
-const ProcessHeader = require('./process-header/ProcessHeader.js');
-const Dropdown = require('../dropdown/Dropdown.js');
 const Util = require('../../util/util.js');
 
-const React = require('react');
+const ProcessHeader = require('./process-header/ProcessHeader.js');
+const ProcessData = require('./process-data/ProcessData.js');
+const Dropdown = require('../dropdown/Dropdown.js');
+
 const R = require('ramda');
+const React = require('react'),
+      ReactDOM = require('react-dom');
 
 class Processes extends React.Component
 {
@@ -19,39 +21,52 @@ class Processes extends React.Component
     }
 
     /**
-     * Update this.state after removing the given <procsToRemove>.
+     * Update state after removing the given array of procs.
      * @param {Array[Object]} procsToRemove - Array of process objects.
      */
     removeProcesses(procsToRemove)
     {
-        console.log(`Removing ${procsToRemove.map(p => p.name).join(', ')}`);
-
         const procsWithRemovedProcs = R.without(procsToRemove, this.state.processes);
-
-        // TODO
-        console.log('procsWithRemovedProcs.indexOf(procsToRemove[0]) is:', procsWithRemovedProcs.indexOf(procsToRemove[0]));
-
         this.updateProcessesState(procsWithRemovedProcs);
     }
 
     /**
-     * Adds the given <processesToInsert> to this.state.processes
-     * and updates this.state.
-     * @param {Array[Object]} processesToInsert - Array of process objects.
+     * Adds the given <procsToInsert> to this.state and updates state.
+     * @param {Array[Object]} procsToInsert - Array of process objects.
      */
-    insertProcesses(processesToInsert)
+    insertProcesses(procsToInsert)
     {
-        const procsWithInsertedProcs = [...processesToInsert, ...this.state.processes];
-
+        const procsWithInsertedProcs = [...procsToInsert, ...this.state.processes];
         this.updateProcessesState(procsWithInsertedProcs);
+    }
 
-        // Then call sortProcesses?? It isn't working. TODO.
+    /**
+     * Given an array of processes, add the .hidden class to that <tr> element.
+     * @param {Array[Object]} procsToHide - Array of `process` objects.
+     */
+    hideProcesses(procsToHide)
+    {
+        const procRowNodes = document.getElementsByClassName('css-process-data');
+
+        [...procRowNodes].forEach(procRowNode =>
+        {
+            // Relies on the fact that the `name` property is the first in the list.
+            const procName = procRowNode.childNodes[0].textContent;
+
+            procsToHide.forEach(procToHide =>
+            {
+                if (procName === procToHide.name)
+                {
+                    procRowNode.classList.add('hidden');
+                }
+            });
+        });
     }
 
     /**
      * Given the name of a process, return all processes in this.state.processes
      * that share that name.
-     * @param {String} processName - The value of the name property of a proc obj.
+     * @param {String} processName - The `name` property of a process obj.
      * @returns {Array[Object]} - All procs with that name.
      */
     getProcessesOfThisName(processName)
@@ -61,7 +76,7 @@ class Processes extends React.Component
 
     /**
      * Given the name of a process, if there is more than one occurrence of that
-     * process, create aand return a custom process object from the combination
+     * process, create and return a custom process object from the combination
      * of all processes of that name.
      * @param {String} processName - Name of a process.
      * @returns {Object} - A summarized "super" process.
@@ -170,6 +185,7 @@ class Processes extends React.Component
                 getProcessesOfThisName={this.getProcessesOfThisName.bind(this)}
                 removeProcesses={this.removeProcesses.bind(this)}
                 insertProcesses={this.insertProcesses.bind(this)}
+                hideProcesses={this.hideProcesses.bind(this)}
             />
         );
     }

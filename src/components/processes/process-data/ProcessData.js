@@ -57,25 +57,24 @@ class ProcessData extends React.Component
     getDropdownActionsForThisProcess(proc)
     {
         // Dropdown.makeActionObj takes an array of functions to invoke as second argument.
-        // The functions I pass to it are curried, then partially applied. so we trigger() them
-        // Then they're invoked in Dropdown.js without Dropdown.js having to know what
-        // args the functions/triggers took/needed.
+        // The functions passed to it are curried, then partially applied, then finally invoked.
+        // They're invoked in Dropdown.js without having to know what args were needed.
 
         // Note: R.partial takes a func and its an array of its args.
 
-        // Below are curried functions which when called with an array of args,
+        // Below are curried functions that when called with an array of args,
         // returns a partially applied function.
         const killGivenProcesses = R.partial(killProcesses);
-        const removeGivenProcesses = R.partial(this.props.removeProcesses)
+        const hideGivenProcesses = R.partial(this.props.hideProcesses);
+        const removeGivenProcesses = R.partial(this.props.removeProcesses);
+        const insertGivenProcesses = R.partial(this.props.insertProcesses);
 
         // Add a dropdown action to kill the given process by PID and initialize actions array.
         let dropdownActions = Dropdown.makeActions([],
-            `Kill "${proc.name}" (PID: ${proc.pid})`,
-            [
-                killGivenProcesses([[proc.pid]]),
-                removeGivenProcesses([[proc]])
-            ]
-        );
+            `Kill "${proc.name}" (PID: ${proc.pid})`, [
+            killGivenProcesses([[proc.pid]]),
+            removeGivenProcesses([[proc]])
+        ]);
 
         // If there is more than one process with this name...
         const procsOfThisName = this.props.getProcessesOfThisName(proc.name);
@@ -83,27 +82,25 @@ class ProcessData extends React.Component
         if (procNameNum > 1)
         {
             const bothOrAllN = (procNameNum === 2) ? 'both' : `all ${procNameNum}`;
+            const actionText = `${bothOrAllN} "${proc.name}" processes`;
 
             // Add a dropdown action to kill all procs with this name.
-            dropdownActions = Dropdown.makeActions(dropdownActions,
-                `Kill ${bothOrAllN} "${proc.name}" processes`,
-                [
-                    killGivenProcesses([ procsOfThisName.map(p => p.pid) ]),
-                    removeGivenProcesses([ procsOfThisName ])
-                ]
-            );
+            dropdownActions = Dropdown.makeActions(dropdownActions, `Kill ${actionText}`, [
+                killGivenProcesses([ procsOfThisName.map(p => p.pid) ]),
+                removeGivenProcesses([ procsOfThisName ])
+            ]);
+
+            // Add a dropdown action to hide all procs with this name.
+            dropdownActions = Dropdown.makeActions(dropdownActions, `Hide ${actionText}`, [
+                hideGivenProcesses([ procsOfThisName ])
+            ]);
 
             const summedProc = this.props.getSummarizedProcess(proc.name);
 
             // Add a dropdown action to summarized this proc.
-            dropdownActions = Dropdown.makeActions(dropdownActions,
-                `Summate ${bothOrAllN} "${proc.name}" processes`,
-                [
-                    removeGivenProcesses([ procsOfThisName ]),
-                    R.partial(this.props.insertProcesses, [ [summedProc] ]) // NOT WORKING!!!!
-                    // () => { console.log('summedProc is:', summedProc); }
-                ]
-            );
+            dropdownActions = Dropdown.makeActions(dropdownActions, `Summate ${actionText}`, [
+                insertGivenProcesses([ [summedProc] ])
+            ]);
         }
 
         return dropdownActions;
@@ -112,7 +109,7 @@ class ProcessData extends React.Component
     /**
      * Given this.props.processData as an argument, return an array of HTML elements.
      * @param {Object} processData - A process object.
-     * @returns {Array[<td/>]} - An array of <td> elements containing the values of
+     * @returns {Array[<td>]} - An array of <td> elements containing the values of
      *     the given processData object.
      */
     renderProcessData(processData)
@@ -129,7 +126,8 @@ class ProcessData extends React.Component
     {
         return (
             <tr className='css-process-data'
-                onContextMenu={this.onRightClick.bind(this)}>
+                onContextMenu={this.onRightClick.bind(this)}
+            >
                 {this.renderProcessData(this.props.processData)}
             </tr>
         );
@@ -137,19 +135,21 @@ class ProcessData extends React.Component
 }
 
 ProcessData.propTypes = {
-    processData: React.PropTypes.object,
-    getProcessesOfThisName: React.PropTypes.func,
-    removeProcesses: React.PropTypes.func,
-    getSummarizedProcess: React.PropTypes.func,
-    insertProcesses: React.PropTypes.func
+    // processData:            React.PropTypes.object.isRequired,
+    // getProcessesOfThisName: React.PropTypes.func.isRequired,
+    // getSummarizedProcess:   React.PropTypes.func.isRequired,
+    // removeProcesses:        React.PropTypes.func.isRequired,
+    // insertProcesses:        React.PropTypes.func.isRequired,
+    // hideProcesses:          React.PropTypes.func.isRequired
 };
 
 ProcessData.defaultProps = {
-    processData: {},
+    processData:            {},
     getProcessesOfThisName: function() {},
-    removeProcesses: function() {},
-    getSummarizedProcess: function() {},
-    insertProcesses: function() {}
+    getSummarizedProcess:   function() {},
+    removeProcesses:        function() {},
+    insertProcesses:        function() {},
+    hideProcesses:          function() {}
 };
 
 module.exports = ProcessData;

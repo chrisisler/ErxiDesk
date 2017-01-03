@@ -2,42 +2,34 @@
 
 div.css-dropdown-wrap
 {
-    display: block;
     position: absolute;
-    // overflow: auto; // TODO: Fix overflow
+    border: 1px solid $base01;
+    border-radius: 2px;
 
     & > ul
     {
-        // position: absolute;
-
         @extend .z-depth-2;
 
         color: $base3;
         background-color: $base02;
-
+        border-radius: inherit;
         z-index: 999;
         display: block;
         list-style-type: none;
-        border-radius: 3px;
-
         margin: 0;
         padding: 4px 0;
-
         min-width: 200px;
         max-width: 500px;
         width: max-content;
-
         max-height: 400px;
 
-        li
+        & > li
         {
-            // clear: both;
+            @include clickable($blue);
 
             line-height: 1.5rem;
             text-align: left;
             padding: 8px 28px;
-
-            @include clickable($blue);
         }
     }
 }

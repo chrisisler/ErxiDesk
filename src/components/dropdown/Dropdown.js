@@ -39,8 +39,6 @@ class Dropdown extends React.Component
     {
         super(props);
 
-        this.hideDropdown.bind(this);
-
         this.dropdownClass = 'js-dropdown-menu';
 
         this.state = {
@@ -51,6 +49,8 @@ class Dropdown extends React.Component
     }
 
     /**
+     * This function and makeActions are the two ways to create an `action` object
+     * for this dropdown.
      * Builds and returns an immutable `action` object to be part of this.props.actions.
      * @param {String} text - Describes what will happen when this action is clicked.
      * @param {Array[Function]|Function} triggers - Function or list of functions to
@@ -72,6 +72,8 @@ class Dropdown extends React.Component
     }
 
     /**
+     * This function and makeActionObj are the two ways to create an `action` object
+     * for this dropdown.
      * Uses Dropdown.makeActionObj to return an array of actions.
      * @param {Array[Object]} previousActions - List of actions for use as this.props.actions.
      * @param {String} text - Describes what will happen when this action is clicked.
@@ -91,8 +93,9 @@ class Dropdown extends React.Component
 
     componentDidMount()
     {
-        const self = this;
+        this.avoidOverflow(this.state.left, this.state.top);
 
+        const self = this;
         document.addEventListener('click', function(event)
         {
             // It works.
@@ -105,8 +108,6 @@ class Dropdown extends React.Component
                 document.removeEventListener('click', this);
             }
         });
-
-        this.avoidOverflow(this.state.left, this.state.top);
     }
 
     // Given x, y (coordinates of the top-left corner of the dropdown menu),
@@ -152,7 +153,8 @@ class Dropdown extends React.Component
     /** I seriously hope I don't need to write docs for this function, ever. */
     hideDropdown()
     {
-        this.setState({ visibility: off });
+        // this.setState({ visibility: off });
+        ReactDOM.unmountComponentAtNode(document.getElementById('dropdown'));
     }
 
     /**

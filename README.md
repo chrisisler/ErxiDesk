@@ -23,7 +23,6 @@ ErxiDesk is a Windows desktop app built with Electron + React.
 2. Sass
 
 ## To-do
-- Dropdown fadein/out
 - ProcessData summarization ( needs work )
 - ProcessData multikill ( needs work )
 - Add ability to actually kill a process in the dropdown menu ( needs work )
