@@ -52,8 +52,14 @@ class ProcessData extends React.Component
         />;
 
         ReactDOM.render(dropdownComponent, document.getElementById('dropdown'));
+
     }
 
+    /**
+     * Given a process, generate and return an array of `actions` (see Dropdown.js).
+     * @param {Object} proc - A `process` object.
+     * @returns {Array[Object]} - Dropdown actions.
+     */
     getDropdownActions(proc)
     {
         // Dropdown.makeActionObj takes an array of functions to invoke as second argument.
@@ -61,62 +67,83 @@ class ProcessData extends React.Component
         // They're invoked in Dropdown.js without having to know what args were needed.
 
         // Note: R.partial takes a func and its an array of its args.
-        const killGivenProcesses = R.partial(killProcesses);
-        const hideGivenProcesses = R.partial(this.props.hideProcesses);
+        const killGivenProcesses   = R.partial(killProcesses);
+        const hideGivenProcesses   = R.partial(this.props.hideProcesses);
+        const unhideGivenProcesses = R.partial(this.props.unhideProcesses);
         const removeGivenProcesses = R.partial(this.props.removeProcesses);
         const insertGivenProcesses = R.partial(this.props.insertProcesses);
 
-        const killThisProcAction = Dropdown.makeActionObj(
-            `Kill "${proc.name}" (PID: ${proc.pid})`, [
+        const oneActionText = `"${proc.name}" (PID: ${proc.pid})`;
+
+        // The order the actions are inserted here determines what the order the user sees them in.
+        let dropdownActions = [];
+
+        const killThisProcAction = Dropdown.makeActionObj(`Kill ${oneActionText}`, [
             killGivenProcesses([[proc.pid]]),
             removeGivenProcesses([[proc]])
         ]);
+        dropdownActions.push(killThisProcAction);
 
-        const hideThisProcAction = Dropdown.makeActionObj(
-            `Hide "${proc.name}" (PID: ${proc.pid})`, [
-            hideGivenProcesses([[proc]]),
-            removeGivenProcesses([[proc]])
-        ]);
+        // This if statement is written this way to preserve the order of elems pushed.
+        const _procIsHidden = this.props.processIsHidden(proc);
 
-        // The order the actions are inserted here determines what the order the user sees them in.
-        let dropdownActions = [
-            killThisProcAction,
-            hideThisProcAction
-        ];
+        if (!_procIsHidden)
+        {
+            const hideThisProcAction = Dropdown.makeActionObj(`Hide ${oneActionText}`, [
+                hideGivenProcesses([[proc]])
+            ]);
+            dropdownActions.push(hideThisProcAction);
+        }
+        else
+        {
+            const unhideThisProcAction = Dropdown.makeActionObj(`Unhide ${oneActionText}`, [
+                unhideGivenProcesses([[proc]])
+            ]);
+            dropdownActions.push(unhideThisProcAction);
+        }
 
-        // If there is more than one process with this name...
+        // If are multiple processes with this name:
         const procsOfThisName = this.props.getProcessesOfThisName(proc.name);
         const procNameNum = procsOfThisName.length;
         if (procNameNum > 1)
         {
-            const divider = Dropdown.makeActionObj('divider');
-
             const bothOrAllN = (procNameNum === 2) ? 'both' : `all ${procNameNum}`;
-            const actionText = `${bothOrAllN} "${proc.name}" processes`;
+            const multiActionText = `${bothOrAllN} "${proc.name}" processes`;
+
+            const divider = Dropdown.makeDivider();
+            dropdownActions.push(divider);
 
             // Add a dropdown action to kill all procs with this name.
-            const killAllProcsOfThisNameAction = Dropdown.makeActionObj(`Kill ${actionText}`, [
+            const killAllProcsOfThisNameAction = Dropdown.makeActionObj(`Kill ${multiActionText}`, [
                 killGivenProcesses([ procsOfThisName.map(p => p.pid) ]),
                 removeGivenProcesses([ procsOfThisName ])
             ]);
+            dropdownActions.push(killAllProcsOfThisNameAction);
 
-            // Add a dropdown action to hide all procs with this name.
-            const hideAllProcsOfThisNameAction = Dropdown.makeActionObj(`Hide ${actionText}`, [
-                hideGivenProcesses([ procsOfThisName ])
-            ]);
+            if (!_procIsHidden)
+            {
+                // Add a dropdown action to hide all procs with this name.
+                const hideAllProcsOfThisNameAction = Dropdown.makeActionObj(`Hide ${multiActionText}`, [
+                    hideGivenProcesses([ procsOfThisName ])
+                ]);
+                dropdownActions.push(hideAllProcsOfThisNameAction);
+            }
+            else
+            {
+                // Add a dropdown action to unhide all procs with this name.
+                const unhideAllProcsOfThisNameAction = Dropdown.makeActionObj(`Unhide ${multiActionText}`, [
+                    unhideGivenProcesses([ procsOfThisName ])
+                ]);
+                dropdownActions.push(unhideAllProcsOfThisNameAction);
+            }
+
+            dropdownActions.push(divider);
 
             // Add a dropdown action to summarized this proc.
-            const summarizeThisProcAction = Dropdown.makeActionObj(`Summate ${actionText}`, [
+            const summarizeThisProcAction = Dropdown.makeActionObj(`Summate ${multiActionText}`, [
                 insertGivenProcesses([ [this.props.getSummarizedProcess(proc.name)] ])
             ]);
-
-            dropdownActions.push(
-                divider,
-                killAllProcsOfThisNameAction,
-                hideAllProcsOfThisNameAction,
-                divider,
-                summarizeThisProcAction
-            );
+            dropdownActions.push(summarizeThisProcAction);
         }
 
         return dropdownActions;
@@ -133,8 +160,8 @@ class ProcessData extends React.Component
         // mapProp is Array.prototype.map but for each hasOwnProperty of the given object.
         return Util.mapProp(processData, (key, value, index, object) =>
             key === 'memoryUsage'
-                ? <td key={index}>{this._convertMemUseToString(value)}</td>
-                : <td key={index}>{value}</td>
+                ? <td key={value}>{this._convertMemUseToString(value)}</td>
+                : <td key={value}>{value}</td>
         );
     }
 
@@ -156,7 +183,9 @@ ProcessData.propTypes = {
     getSummarizedProcess:   React.PropTypes.func.isRequired,
     removeProcesses:        React.PropTypes.func.isRequired,
     insertProcesses:        React.PropTypes.func.isRequired,
-    hideProcesses:          React.PropTypes.func.isRequired
+    hideProcesses:          React.PropTypes.func.isRequired,
+    unhideProcesses:        React.PropTypes.func.isRequired,
+    processIsHidden:        React.PropTypes.func.isRequired
 };
 
 ProcessData.defaultProps = {
@@ -165,7 +194,9 @@ ProcessData.defaultProps = {
     getSummarizedProcess:   function() {},
     removeProcesses:        function() {},
     insertProcesses:        function() {},
-    hideProcesses:          function() {}
+    hideProcesses:          function() {},
+    unhideProcesses:        function() {},
+    processIsHidden:        function() {}
 };
 
 module.exports = ProcessData;

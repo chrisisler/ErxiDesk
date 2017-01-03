@@ -23,18 +23,12 @@ ErxiDesk is a Windows desktop app built with Electron + React.
 2. Sass
 
 ## To-do
-- Add ability to actually kill a process in the dropdown menu ( needs work )
-  - Add a visual notification to show pkill success/error (async?)
-
 - Add ability to refresh processes
 - Add ability to search for running processes
 - Show total number of processes running
 - Add option to show top N elements using R.take(N)
 
-- Add "unhide" this process to dropdown (only for already hidden processes)
-- Add "unhide" both/all processes of this name to dropdown (only for already hidden procs)
-
-- Add "hide" this single process to dropdown
+- Add a visual notification to show process kill success or error
 
 - Fix table header for processes
 

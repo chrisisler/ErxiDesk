@@ -92,6 +92,16 @@ class Dropdown extends React.Component
         return newActions;
     }
 
+    /**
+     * Create a divider for the dropdown menu.
+     * @returns {Object} - A divider `action` object.
+     * @static
+     */
+    static makeDivider()
+    {
+        return Dropdown.makeActionObj('divider', null);
+    }
+
     componentDidMount()
     {
         this.avoidOverflow(this.state.left, this.state.top);
@@ -184,7 +194,7 @@ class Dropdown extends React.Component
         {
             if (action.text === this.dividerClass)
             {
-                return <li key={index} className={this.dividerClass}/>;
+                return <li key={index} className={`${this.dropdownClass} ${this.dividerClass}`}/>;
             }
             else
             {
@@ -194,7 +204,7 @@ class Dropdown extends React.Component
                     className={this.dropdownClass}
                 >
                     {action.text}
-                </li>
+                </li>;
             }
         });
     }

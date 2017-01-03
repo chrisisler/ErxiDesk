@@ -17,6 +17,8 @@ class Processes extends React.Component
     {
         super(props);
 
+        this.hiddenProcessDataClass = 'hidden';
+
         this.state = { processes: [] };
     }
 
@@ -41,25 +43,63 @@ class Processes extends React.Component
     }
 
     /**
-     * Given an array of processes, add the .hidden class to that <tr> element.
-     * @param {Array[Object]} procsToHide - Array of `process` objects.
+     * Given an array of processes, call the given function on each process data
+     * with a matching pid.
+     * @param {Array[Object]} procsToMatch - Array of process objects.
+     * @param {Function} func - Passed each process row node with a matching `pid`.
+     * @private
      */
-    hideProcesses(procsToHide)
+    _getProcessDataRowNodes(procsToMatch, func)
     {
         const procRowNodes = document.getElementsByClassName('css-process-data');
 
         [...procRowNodes].forEach(procRowNode =>
         {
-            // Relies on the fact that the `name` property is the first in the list.
-            const procName = procRowNode.childNodes[0].textContent;
+            // Relies on `pid` property being a non-Number and second in the list.
+            const pid = parseInt(procRowNode.childNodes[1].textContent);
 
-            procsToHide.forEach(procToHide =>
+            procsToMatch.forEach(procToMatch =>
             {
-                if (procName === procToHide.name)
+                if (pid === procToMatch.pid)
                 {
-                    procRowNode.classList.add('hidden');
+                    func(procRowNode, procToMatch);
                 }
             });
+        });
+    }
+
+    processIsHidden(proc)
+    {
+        let procsAreHidden = false;
+        this._getProcessDataRowNodes([ proc ], (procRowNode) =>
+        {
+            procsAreHidden = procRowNode.classList.contains(this.hiddenProcessDataClass);
+            console.log('procsAreHidden is:', procsAreHidden);
+        });
+        return procsAreHidden
+    }
+
+    /**
+     * Given an array of processes, add the .hidden class to those <tr> elements.
+     * @param {Array[Object]} procsToHide - Array of `process` objects.
+     */
+    hideProcesses(procsToHide)
+    {
+        this._getProcessDataRowNodes(procsToHide, (procRowNode) =>
+        {
+            procRowNode.classList.add(this.hiddenProcessDataClass);
+        });
+    }
+
+    /**
+     * Given an array of processes, remove the .hidden class from those <tr> elements.
+     * @param {Array[Object]} procsToUnhide - Array of `process` objects.
+     */
+    unhideProcesses(procsToUnhide)
+    {
+        this._getProcessDataRowNodes(procsToUnhide, (procRowNode) =>
+        {
+            procRowNode.classList.remove(this.hiddenProcessDataClass);
         });
     }
 
@@ -163,7 +203,7 @@ class Processes extends React.Component
     {
         return PROCESS_KEYS.map((procKey, index, array) =>
             <ProcessHeader
-                key={index}
+                key={procKey}
                 procKey={procKey}
                 sortProcesses={this.sortProcesses.bind(this)}
             />
@@ -179,13 +219,15 @@ class Processes extends React.Component
     {
         return _processes.map((proc, index, array) =>
             <ProcessData
-                key={index}
+                key={proc.pid}
                 processData={proc}
                 getSummarizedProcess={this.getSummarizedProcess.bind(this)}
                 getProcessesOfThisName={this.getProcessesOfThisName.bind(this)}
                 removeProcesses={this.removeProcesses.bind(this)}
                 insertProcesses={this.insertProcesses.bind(this)}
                 hideProcesses={this.hideProcesses.bind(this)}
+                unhideProcesses={this.unhideProcesses.bind(this)}
+                processIsHidden={this.processIsHidden.bind(this)}
             />
         );
     }
