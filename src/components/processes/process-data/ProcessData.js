@@ -44,7 +44,7 @@ class ProcessData extends React.Component
         let proc = makeProcessObj(procRowNodeList, PROCESS_KEYS, node => node.textContent);
         proc = convertMemoryUsageToNumber(proc);
 
-        const dropdownActions = this.getDropdownActionsForThisProcess(proc);
+        const dropdownActions = this.getDropdownActions(proc);
 
         const dropdownComponent = <Dropdown actions={dropdownActions}
             x={event.pageX}
@@ -54,66 +54,69 @@ class ProcessData extends React.Component
         ReactDOM.render(dropdownComponent, document.getElementById('dropdown'));
     }
 
-    getDropdownActionsForThisProcess(proc)
+    getDropdownActions(proc)
     {
         // Dropdown.makeActionObj takes an array of functions to invoke as second argument.
         // The functions passed to it are curried, then partially applied, then finally invoked.
         // They're invoked in Dropdown.js without having to know what args were needed.
 
         // Note: R.partial takes a func and its an array of its args.
-
-        // Below are curried functions that when called with an array of args,
-        // returns a partially applied function.
         const killGivenProcesses = R.partial(killProcesses);
         const hideGivenProcesses = R.partial(this.props.hideProcesses);
         const removeGivenProcesses = R.partial(this.props.removeProcesses);
         const insertGivenProcesses = R.partial(this.props.insertProcesses);
 
-        // Initialize the array that will hold all `action` objects. (See Dropdown.makeActionObj).
-        let dropdownActions = [];
-
-        // Add a dropdown action to kill the given process.
-        dropdownActions = Dropdown.makeActions(dropdownActions,
+        const killThisProcAction = Dropdown.makeActionObj(
             `Kill "${proc.name}" (PID: ${proc.pid})`, [
             killGivenProcesses([[proc.pid]]),
             removeGivenProcesses([[proc]])
         ]);
 
-        // Add a dropdown action to hide this process.
-        dropdownActions = Dropdown.makeActions(dropdownActions,
+        const hideThisProcAction = Dropdown.makeActionObj(
             `Hide "${proc.name}" (PID: ${proc.pid})`, [
             hideGivenProcesses([[proc]]),
             removeGivenProcesses([[proc]])
         ]);
 
-        // TODO: Divider -> arrange actions by dividers
-        dropdownActions = Dropdown.makeActions(dropdownActions, 'divider', []);
+        // The order the actions are inserted here determines what the order the user sees them in.
+        let dropdownActions = [
+            killThisProcAction,
+            hideThisProcAction
+        ];
 
         // If there is more than one process with this name...
         const procsOfThisName = this.props.getProcessesOfThisName(proc.name);
         const procNameNum = procsOfThisName.length;
         if (procNameNum > 1)
         {
+            const divider = Dropdown.makeActionObj('divider');
+
             const bothOrAllN = (procNameNum === 2) ? 'both' : `all ${procNameNum}`;
             const actionText = `${bothOrAllN} "${proc.name}" processes`;
 
             // Add a dropdown action to kill all procs with this name.
-            dropdownActions = Dropdown.makeActions(dropdownActions, `Kill ${actionText}`, [
+            const killAllProcsOfThisNameAction = Dropdown.makeActionObj(`Kill ${actionText}`, [
                 killGivenProcesses([ procsOfThisName.map(p => p.pid) ]),
                 removeGivenProcesses([ procsOfThisName ])
             ]);
 
             // Add a dropdown action to hide all procs with this name.
-            dropdownActions = Dropdown.makeActions(dropdownActions, `Hide ${actionText}`, [
+            const hideAllProcsOfThisNameAction = Dropdown.makeActionObj(`Hide ${actionText}`, [
                 hideGivenProcesses([ procsOfThisName ])
             ]);
 
-            const summedProc = this.props.getSummarizedProcess(proc.name);
-
             // Add a dropdown action to summarized this proc.
-            dropdownActions = Dropdown.makeActions(dropdownActions, `Summate ${actionText}`, [
-                insertGivenProcesses([ [summedProc] ])
+            const summarizeThisProcAction = Dropdown.makeActionObj(`Summate ${actionText}`, [
+                insertGivenProcesses([ [this.props.getSummarizedProcess(proc.name)] ])
             ]);
+
+            dropdownActions.push(
+                divider,
+                killAllProcsOfThisNameAction,
+                hideAllProcsOfThisNameAction,
+                divider,
+                summarizeThisProcAction
+            );
         }
 
         return dropdownActions;
