@@ -40,6 +40,7 @@ class Dropdown extends React.Component
         super(props);
 
         this.dropdownClass = 'js-dropdown-menu';
+        this.dividerClass = 'divider';
 
         this.state = {
             visibility: on,
@@ -173,20 +174,29 @@ class Dropdown extends React.Component
      * Given an array of action objects (from this.makeActionObj), map each of
      * them to an html <li/> element with an onClick listener set to the
      * action.invoke function property.
+     * Also adds a divider (line) when action.text === 'divider'.
      * @param {Array[Object]} _actions - Array of action objects.
      * @returns {Array[<li/>]} - HTML <li/> elements.
      */
     renderActions(_actions)
     {
         return _actions.map((action, index, array) =>
-            <li
-                key={index}
-                onClick={this.handleClick.bind(this, action.triggers)}
-                className={this.dropdownClass}
-            >
-                {action.text}
-            </li>
-        );
+        {
+            if (action.text === this.dividerClass)
+            {
+                return <li key={index} className={this.dividerClass}/>;
+            }
+            else
+            {
+                return <li
+                    key={action.text}
+                    onClick={this.handleClick.bind(this, action.triggers)}
+                    className={this.dropdownClass}
+                >
+                    {action.text}
+                </li>
+            }
+        });
     }
 
     render()

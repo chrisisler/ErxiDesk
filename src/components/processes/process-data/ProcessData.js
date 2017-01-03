@@ -69,12 +69,25 @@ class ProcessData extends React.Component
         const removeGivenProcesses = R.partial(this.props.removeProcesses);
         const insertGivenProcesses = R.partial(this.props.insertProcesses);
 
-        // Add a dropdown action to kill the given process by PID and initialize actions array.
-        let dropdownActions = Dropdown.makeActions([],
+        // Initialize the array that will hold all `action` objects. (See Dropdown.makeActionObj).
+        let dropdownActions = [];
+
+        // Add a dropdown action to kill the given process.
+        dropdownActions = Dropdown.makeActions(dropdownActions,
             `Kill "${proc.name}" (PID: ${proc.pid})`, [
             killGivenProcesses([[proc.pid]]),
             removeGivenProcesses([[proc]])
         ]);
+
+        // Add a dropdown action to hide this process.
+        dropdownActions = Dropdown.makeActions(dropdownActions,
+            `Hide "${proc.name}" (PID: ${proc.pid})`, [
+            hideGivenProcesses([[proc]]),
+            removeGivenProcesses([[proc]])
+        ]);
+
+        // TODO: Divider -> arrange actions by dividers
+        dropdownActions = Dropdown.makeActions(dropdownActions, 'divider', []);
 
         // If there is more than one process with this name...
         const procsOfThisName = this.props.getProcessesOfThisName(proc.name);
@@ -135,12 +148,12 @@ class ProcessData extends React.Component
 }
 
 ProcessData.propTypes = {
-    // processData:            React.PropTypes.object.isRequired,
-    // getProcessesOfThisName: React.PropTypes.func.isRequired,
-    // getSummarizedProcess:   React.PropTypes.func.isRequired,
-    // removeProcesses:        React.PropTypes.func.isRequired,
-    // insertProcesses:        React.PropTypes.func.isRequired,
-    // hideProcesses:          React.PropTypes.func.isRequired
+    processData:            React.PropTypes.object.isRequired,
+    getProcessesOfThisName: React.PropTypes.func.isRequired,
+    getSummarizedProcess:   React.PropTypes.func.isRequired,
+    removeProcesses:        React.PropTypes.func.isRequired,
+    insertProcesses:        React.PropTypes.func.isRequired,
+    hideProcesses:          React.PropTypes.func.isRequired
 };
 
 ProcessData.defaultProps = {
