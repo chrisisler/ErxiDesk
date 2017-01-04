@@ -25,7 +25,7 @@ div.css-dropdown-wrap
 
         li
         {
-            @include clickable($blue);
+            @include clickable($blue, $base3);
 
             clear: both;
             line-height: 1.5rem;

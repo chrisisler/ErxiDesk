@@ -20,28 +20,32 @@ $blue:      #268bd2 !default;
 $cyan:      #2aa198 !default;
 $green:     #859900 !default;
 
-// "Strings"
+// "Strings" (Example -> #{$transition-style})
 
 $transition-style: ".25s ease" !default;
 
 // Mixins
 
-@mixin hoverable($bg-color)
+// Default parameters.
+@mixin hoverable($bg-color: $base02, $text-color: $base2)
 {
-    transition: background-color #{$transition-style};
+    transition: background-color #{$transition-style}, color #{$transition-style};
 
     &:hover
     {
         background-color: $bg-color;
+        color: $text-color;
+
         @content; // Like passing your own function as a param in JS.
     }
 }
 
-@mixin clickable($bg-hover-color: $blue)
+// Consistent default params.
+@mixin clickable($bg-color: $blue, $text-color: $base2)
 {
     cursor: pointer;
 
-    @include hoverable($bg-hover-color)
+    @include hoverable($bg-color, $text-color)
     {
         @content
     }

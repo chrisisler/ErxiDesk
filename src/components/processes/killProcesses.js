@@ -36,7 +36,6 @@ function killProcesses(pids, func)
 
     const options = { encoding: 'utf8' };
 
-    console.log('command is:', command);
     CP.exec(command, options, func || defaultFunc);
 }
 

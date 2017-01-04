@@ -74,7 +74,6 @@ class Processes extends React.Component
         this._getProcessDataRowNodes([ proc ], (procRowNode) =>
         {
             procsAreHidden = procRowNode.classList.contains(this.hiddenProcessDataClass);
-            console.log('procsAreHidden is:', procsAreHidden);
         });
         return procsAreHidden
     }
@@ -242,6 +241,9 @@ class Processes extends React.Component
 
         return (
             <div className='css-container'>
+                <div>
+                    <input className='css-process-search' type='search' placeholder='Search'/>
+                </div>
                 <table className='css-process-wrap'>
 
                     <thead className='css-process-header-wrap'>

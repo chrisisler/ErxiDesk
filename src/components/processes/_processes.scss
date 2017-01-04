@@ -23,7 +23,10 @@ table.css-process-wrap
 
         th.css-process-header
         {
-            @include clickable($blue);
+            @include clickable($blue, $base3)
+            {
+                @extend.z-depth-2;
+            }
 
             @extend .table-data-spacing;
 
@@ -33,7 +36,7 @@ table.css-process-wrap
 
     tr.css-process-data
     {
-        @include hoverable($base02);
+        @include hoverable($base02, $base2);
 
         td
         {
@@ -47,9 +50,39 @@ table.css-process-wrap
 
             &:hover
             {
-                color: $base01;
+                color: $base02;
             }
         }
+    }
+}
+
+input.css-process-search
+{
+    @extend .z-depth-1;
+
+    font-size: larger;
+    outline: none;
+    // border: 1px solid $base01;
+    border: none;
+    width: 40%;
+
+    margin: 16px 0;
+    padding: 6px 12px;
+
+    background-color: $base02;
+    color: $base1;
+
+    transition: box-shadow #{$transition-style};
+
+    &:hover,
+    &:focus
+    {
+        @extend .z-depth-3;
+    }
+
+    &::-webkit-input-placeholder
+    {
+        color: $base01;
     }
 }
 

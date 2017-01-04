@@ -23,8 +23,9 @@ ErxiDesk is a Windows desktop app built with Electron + React.
 2. Sass
 
 ## To-do
-- Add ability to refresh processes
 - Add ability to search for running processes
+  - Search for names and pids (search pids if first char is a Number)
+- Add ability to refresh processes
 - Show total number of processes running
 - Add option to show top N elements using R.take(N)
 
