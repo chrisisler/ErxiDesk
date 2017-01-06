@@ -38,7 +38,7 @@ const _sanitizers = Object.freeze(
     ),
 
     removeExeFromNames: R.map(proc =>
-        proc.name.endsWith('.exe')
+        (proc.name.endsWith('.exe') || proc.name.endsWith('.EXE'))
             ? Object.assign({}, proc, { name: proc.name.replace(/\.exe/i, '') })
             : proc
     ),
@@ -112,27 +112,6 @@ function getProcesses()
 
     const cleanProcesses = sanitize(dirtyProcesses);
     return cleanProcesses;
-}
-
-function getSummarizedProcess(processName, processes)
-{
-    const processesOfThisName = processes.filter(proc => proc.name === processName)
-
-    if (processesOfThisName.length === 1)
-    {
-        return processesOfThisName[0];
-    }
-
-    const summarizedProcess = {
-        name: processName,
-        pids: processesOfThisName.map(proc => proc.pid),
-        sessionName: processesOfThisName[0].sessionName,
-        sessionNumber: processesOfThisName[0].sessionNumber,
-        memoryUsage: processesOfThisName.reduce((totalMemUse, proc) => totalMemUse + proc.memoryUsage, 0),
-        numberOfOccurrences: processesOfThisName.length
-    };
-
-    return summarizedProcess;
 }
 
 module.exports =

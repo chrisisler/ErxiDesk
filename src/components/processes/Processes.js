@@ -3,6 +3,7 @@
 const { getProcesses, PROCESS_KEYS } = require('./getProcesses.js');
 const Util = require('../../util/util.js');
 
+const SearchInput = require('../search-input/SearchInput.js');
 const ProcessHeader = require('./process-header/ProcessHeader.js');
 const ProcessData = require('./process-data/ProcessData.js');
 const Dropdown = require('../dropdown/Dropdown.js');
@@ -186,11 +187,36 @@ class Processes extends React.Component
      */
     updateProcessesState(newProcesses)
     {
-        this.setState((previousState, previousProps) =>
+        this.setState((previousState, props) =>
             Object.assign({}, previousState, {
                 processes: newProcesses
             })
         );
+    }
+
+    /**
+     * When the user searches for a process name/pid, filter the non-matching procs.
+     * @param {Object} keyEvent - A (synthetic) keyboard event (keydown).
+     */
+    handleSearchProcesses(keyEvent)
+    {
+        const searchQuery = keyEvent.target.value;
+        console.log('\ntypeof searchQuery === "number" is:', typeof searchQuery === "number");
+        console.log('typeof searchQuery === "string" is:', typeof searchQuery === "string");
+
+        // if (R.is(Number, searchQuery))
+        // {
+        //     console.log('Is Number');
+        // }
+        // else
+        // {
+        //     console.log('Is String');
+
+        //     const procsFilteredByName = this.state.processes
+        //         .filter(proc => proc.name.toLowerCase().includes(searchQuery));
+
+        //     this.updateProcessesState(procsFilteredByName);
+        // }
     }
 
     /**
@@ -241,9 +267,12 @@ class Processes extends React.Component
 
         return (
             <div className='css-container'>
-                <div>
-                    <input className='css-process-search' type='search' placeholder='Search'/>
-                </div>
+
+                <SearchInput
+                    className='css-process-search'
+                    handleSearchProcesses={this.handleSearchProcesses.bind(this)}
+                />
+
                 <table className='css-process-wrap'>
 
                     <thead className='css-process-header-wrap'>

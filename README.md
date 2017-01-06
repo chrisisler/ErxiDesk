@@ -25,6 +25,9 @@ ErxiDesk is a Windows desktop app built with Electron + React.
 ## To-do
 - Add ability to search for running processes
   - Search for names and pids (search pids if first char is a Number)
+    - Add 'X' clickable UI button to empty the search input
+    - How to handle putting procs back after search is done??
+
 - Add ability to refresh processes
 - Show total number of processes running
 - Add option to show top N elements using R.take(N)
