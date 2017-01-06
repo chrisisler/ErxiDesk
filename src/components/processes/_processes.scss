@@ -49,6 +49,11 @@ table.css-process-wrap
 
             color: $base02;
         }
+
+        &.css-process-data.no-display
+        {
+            display: none;
+        }
     }
 }
 
@@ -56,11 +61,11 @@ input.css-process-search
 {
     @extend .z-depth-1;
 
+    border-radius: 2px;
     font-size: larger;
     outline: none;
     border: none;
     width: 40%;
-    border-radius: 2px;
 
     margin: 16px 0;
     padding: 6px 12px;

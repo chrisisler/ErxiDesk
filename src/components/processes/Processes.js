@@ -18,7 +18,9 @@ class Processes extends React.Component
     {
         super(props);
 
+        // These classes interact with _processes.scss
         this.hiddenProcessDataClass = 'hidden';
+        this.noDisplayProcessDataClass = 'no-display';
 
         this.state = { processes: [] };
     }
@@ -187,36 +189,49 @@ class Processes extends React.Component
      */
     updateProcessesState(newProcesses)
     {
-        this.setState((previousState, props) =>
-            Object.assign({}, previousState, {
-                processes: newProcesses
-            })
-        );
+        this.setState(Object.assign({}, this.state, {
+            processes: newProcesses
+        }));
     }
 
     /**
-     * When the user searches for a process name/pid, filter the non-matching procs.
-     * @param {Object} keyEvent - A (synthetic) keyboard event (keydown).
+     * When user searches for processes by name (string) or pid (number), add a class to the procs
+     * that don't match that query which sets their `display: none` in css (see ./_Processes.scss).
+     * @param {Object} event - keyboardEvent fired on the <input> element -> gives <searchQuery>.
      */
-    handleSearchProcesses(keyEvent)
+    searchProcesses(event)
     {
-        const searchQuery = keyEvent.target.value;
-        console.log('\ntypeof searchQuery === "number" is:', typeof searchQuery === "number");
-        console.log('typeof searchQuery === "string" is:', typeof searchQuery === "string");
+        const searchQuery = event.target.value;
 
-        // if (R.is(Number, searchQuery))
-        // {
-        //     console.log('Is Number');
-        // }
-        // else
-        // {
-        //     console.log('Is String');
+        if (searchQuery.length === 0)
+        {
+            this._getProcessDataRowNodes(this.state.processes, procRowNode =>
+            {
+                procRowNode.classList.remove(this.noDisplayProcessDataClass);
+            });
+        }
+        else if (isNaN(searchQuery) && typeof searchQuery === 'string')
+        {
+            const procsNotMatchingQuery = this.state.processes
+                .filter(proc => !proc.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-        //     const procsFilteredByName = this.state.processes
-        //         .filter(proc => proc.name.toLowerCase().includes(searchQuery));
+            _hideProcDataNodes.call(this, procsNotMatchingQuery);
+        }
+        else // searchQuery is a number -> user is searching for a pid.
+        {
+            const procsNotMatchingQuery = this.state.processes
+                .filter(proc => !proc.pid.toString().includes(searchQuery.toString()));
 
-        //     this.updateProcessesState(procsFilteredByName);
-        // }
+            _hideProcDataNodes.call(this, procsNotMatchingQuery);
+        }
+
+        function _hideProcDataNodes(doNotDisplayTheseProcs)
+        {
+            this._getProcessDataRowNodes(doNotDisplayTheseProcs, procRowNode =>
+            {
+                procRowNode.classList.add(this.noDisplayProcessDataClass);
+            });
+        }
     }
 
     /**
@@ -270,7 +285,7 @@ class Processes extends React.Component
 
                 <SearchInput
                     className='css-process-search'
-                    handleSearchProcesses={this.handleSearchProcesses.bind(this)}
+                    handleSearchQuery={this.searchProcesses.bind(this)}
                 />
 
                 <table className='css-process-wrap'>
