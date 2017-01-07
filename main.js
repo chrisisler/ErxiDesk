@@ -15,8 +15,8 @@ const {app, BrowserWindow} = require('electron');
 // Global reference to the (main) window object.
 let mainWindow = null;
 
-const WINDOW_MIN_WIDTH = 600;
-const WINDOW_MIN_HEIGHT = 600;
+const WINDOW_MIN_WIDTH = 800;
+const WINDOW_MIN_HEIGHT = 400;
 const WINDOW_DEFAULT_WIDTH = 1200;
 const WINDOW_DEFAULT_HEIGHT = 900;
 

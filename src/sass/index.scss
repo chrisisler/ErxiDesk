@@ -20,18 +20,16 @@
 
 html
 {
-    box-sizing: border-box;
-    height: 100vh;
-
     background-color: $base03;
     color: $base0;
+    box-sizing: border-box;
     letter-spacing: 0.5px;
+    height: 100vh;
 
     body
     {
         div.css-body-wrap
         {
-
             div.css-container
             {
                 margin: 0 auto;

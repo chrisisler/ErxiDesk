@@ -23,13 +23,6 @@ ErxiDesk is a Windows desktop app built with Electron + React.
 2. Sass
 
 ## To-do
-- Add ability to search for running processes
-  - Search for names and pids (search pids if first char is a Number)
-    - Add 'X' clickable UI button to empty the search input
-    - How to handle putting procs back after search is done??
-
-- Add ability to refresh processes
-- Show total number of processes running
 - Add option to show top N elements using R.take(N)
 
 - Add a visual notification to show process kill success or error
@@ -40,5 +33,5 @@ ErxiDesk is a Windows desktop app built with Electron + React.
 
 - Add tabs/header
 
-- Right click process property title to display dropdown with option to hide that column
+- Right click process property title to display dropdown with option to hide that column (??)
 

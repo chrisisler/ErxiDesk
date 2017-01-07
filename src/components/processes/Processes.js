@@ -6,7 +6,6 @@ const Util = require('../../util/util.js');
 const SearchInput = require('../search-input/SearchInput.js');
 const ProcessHeader = require('./process-header/ProcessHeader.js');
 const ProcessData = require('./process-data/ProcessData.js');
-const Dropdown = require('../dropdown/Dropdown.js');
 
 const R = require('ramda');
 const React = require('react'),
@@ -32,7 +31,7 @@ class Processes extends React.Component
     removeProcesses(procsToRemove)
     {
         const procsWithRemovedProcs = R.without(procsToRemove, this.state.processes);
-        this.updateProcessesState(procsWithRemovedProcs);
+        this.setState({ processes: procsWithRemovedProcs });
     }
 
     /**
@@ -42,7 +41,7 @@ class Processes extends React.Component
     insertProcesses(procsToInsert)
     {
         const procsWithInsertedProcs = [...procsToInsert, ...this.state.processes];
-        this.updateProcessesState(procsWithInsertedProcs);
+        this.setState({ processes: procsWithInsertedProcs });
     }
 
     /**
@@ -54,6 +53,7 @@ class Processes extends React.Component
      */
     _getProcessDataRowNodes(procsToMatch, func)
     {
+        // <procRowNodes> is this.state.processes as HTML elements/nodes.
         const procRowNodes = document.getElementsByClassName('css-process-data');
 
         [...procRowNodes].forEach(procRowNode =>
@@ -180,18 +180,7 @@ class Processes extends React.Component
         );
 
         const sortedProcs = getProcessesSortedByKey(_processes);
-        this.updateProcessesState(sortedProcs);
-    }
-
-    /**
-     * Given a new batch of process objects, <newProcesses>, update this.state.
-     * @param {Array[Object]} - New set of <processes> to call on this.setState().
-     */
-    updateProcessesState(newProcesses)
-    {
-        this.setState(Object.assign({}, this.state, {
-            processes: newProcesses
-        }));
+        this.setState({ processes: sortedProcs });
     }
 
     /**
@@ -235,6 +224,29 @@ class Processes extends React.Component
     }
 
     /**
+     * TODO
+     */
+    showTopNProcesses(event)
+    {
+        console.log('In Processes.showTopNProcesses()');
+        console.log('event is:', event);
+    }
+
+    /**
+     * Grab a fresh batch of processes from getProcesses.js.
+     * Updates state.
+     */
+    refreshProcesses()
+    {
+        this.setState({ processes: [] });
+
+        this.setState({ processes: getProcesses() }, () =>
+        {
+            this.sortProcesses('memoryUsage', true);
+        });
+    }
+
+    /**
      * Given the <PROCESS_KEYS>, return the <ProcessHeader> components.
      * @param {Array[String]} PROCESS_KEYS - Array of keys of a <process> obj.
      * @returns {Array[<ProcessHeader>]} - The <ProcessHeader> UI components.
@@ -243,7 +255,7 @@ class Processes extends React.Component
     {
         return PROCESS_KEYS.map((procKey, index, array) =>
             <ProcessHeader
-                key={procKey}
+                key={index + ' ' + procKey}
                 procKey={procKey}
                 sortProcesses={this.sortProcesses.bind(this)}
             />
@@ -252,14 +264,14 @@ class Processes extends React.Component
 
     /**
      * Accesses <this.state.processes> to return an array of <ProcessData>.
-     * @param {Array[Object]} _processes - this.state.processes
+     * @param {Array[Object]} _processes - A reference to this.state.processes
      * @returns {Array[<ProcessData>]} - Array of <ProcessData> UI components.
      */
     renderProcessData(_processes)
     {
         return _processes.map((proc, index, array) =>
             <ProcessData
-                key={proc.pid}
+                key={index + ' ' + proc.pid}
                 processData={proc}
                 getSummarizedProcess={this.getSummarizedProcess.bind(this)}
                 getProcessesOfThisName={this.getProcessesOfThisName.bind(this)}
@@ -272,21 +284,40 @@ class Processes extends React.Component
         );
     }
 
+    renderElementsAboveTable()
+    {
+        return <div className='css-process-above'>
+            <SearchInput
+                className='css-process-search'
+                placeholder='Search name/pid'
+                handleSearchQuery={this.searchProcesses.bind(this)}
+            />
+
+            <i
+                className='material-icons css-process-refresh'
+                onClick={this.refreshProcesses.bind(this)}
+            >
+                cached
+            </i>
+
+            <span className='css-process-number'>
+                {this.state.processes.length + ' Processes'}
+            </span>
+
+            <SearchInput
+                className='css-process-show-N'
+                placeholder='Show top N'
+                handleSearchQuery={this.showTopNProcesses.bind(this)}
+            />
+        </div>;
+    }
+
     render()
     {
-        // <div>
-        //     <a>Search Bar</a>
-        //     <a>Refresh Processes UI Button</a>
-        //     <a>Total Number of Processes</a>
-        // </div>
-
         return (
             <div className='css-container'>
 
-                <SearchInput
-                    className='css-process-search'
-                    handleSearchQuery={this.searchProcesses.bind(this)}
-                />
+                {this.renderElementsAboveTable()}
 
                 <table className='css-process-wrap'>
 
@@ -298,6 +329,7 @@ class Processes extends React.Component
 
                     <tbody>
                         {this.renderProcessData(this.state.processes)}
+
                     </tbody>
 
                 </table>

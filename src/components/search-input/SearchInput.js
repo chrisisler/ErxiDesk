@@ -9,9 +9,9 @@ class SearchInput extends React.Component
     {
         super(props);
 
-        this.placeholderText = 'Search';
-
-        this.state = { value: '' };
+        this.state = {
+            value: ''
+        };
     }
 
     onChange(event)
@@ -30,7 +30,7 @@ class SearchInput extends React.Component
                         value={this.state.value}
                         className={this.props.className}
                         onChange={this.onChange.bind(this)}
-                        placeholder={this.placeholderText}
+                        placeholder={this.props.placeholder}
                     />
                 </form>
             </div>

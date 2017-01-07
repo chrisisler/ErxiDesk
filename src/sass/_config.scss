@@ -27,7 +27,7 @@ $transition-style: ".25s ease" !default;
 // Mixins
 
 // Default parameters.
-@mixin hoverable($bg-color: $base02, $text-color: $base2)
+@mixin hoverable($bg-color: $base02, $text-color: $base3)
 {
     transition: background-color #{$transition-style}, color #{$transition-style};
 
@@ -41,7 +41,7 @@ $transition-style: ".25s ease" !default;
 }
 
 // Consistent default params.
-@mixin clickable($bg-color: $blue, $text-color: $base2)
+@mixin clickable($bg-color: $blue, $text-color: $base3)
 {
     cursor: pointer;
 

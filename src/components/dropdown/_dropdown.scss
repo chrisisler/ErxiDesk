@@ -4,7 +4,6 @@ div.css-dropdown-wrap
 {
     position: absolute;
     border: 1px solid $base01;
-    border-radius: 2px;
 
     ul
     {
@@ -12,7 +11,6 @@ div.css-dropdown-wrap
 
         color: $base3;
         background-color: $base02;
-        border-radius: inherit;
         z-index: 999;
         display: block;
         list-style-type: none;

@@ -113,7 +113,7 @@ function getProcesses()
     const cleanProcesses = sanitize(dirtyProcesses);
     return cleanProcesses;
 }
-
+console.log(getProcesses());
 module.exports =
 {
     getProcesses,

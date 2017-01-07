@@ -23,9 +23,9 @@ table.css-process-wrap
 
         th.css-process-header
         {
-            @include clickable($blue, $base3)
+            @include clickable
             {
-                @extend.z-depth-2;
+                @extend .z-depth-2;
             }
 
             @extend .table-data-spacing;
@@ -36,7 +36,7 @@ table.css-process-wrap
 
     tr.css-process-data
     {
-        @include hoverable($base02, $base2);
+        @include hoverable;
 
         td
         {
@@ -57,21 +57,14 @@ table.css-process-wrap
     }
 }
 
-input.css-process-search
+$css-process-above-spacing: 32px !default;
+
+.css-process-above-styles
 {
-    @extend .z-depth-1;
-
-    border-radius: 2px;
-    font-size: larger;
-    outline: none;
-    border: none;
-    width: 40%;
-
-    margin: 16px 0;
-    padding: 6px 12px;
-
     background-color: $base02;
-    color: $base1;
+    margin: 16px $css-process-above-spacing 16px 0;
+    float: left;
+    padding: 6px 12px;
 
     transition: box-shadow #{$transition-style};
 
@@ -80,10 +73,52 @@ input.css-process-search
     {
         @extend .z-depth-3;
     }
+}
+
+.css-process-above-search
+{
+    @extend .css-process-above-styles;
+
+    outline: none; border: none;
+    font-size: larger;
+    color: $base1;
 
     &::-webkit-input-placeholder
     {
         color: $base01;
+    }
+}
+
+div.css-process-above
+{
+    input.css-process-search
+    {
+        @extend .css-process-above-search;
+        width: 35%;
+    }
+
+    i.css-process-refresh
+    {
+        @include clickable;
+        @extend .css-process-above-styles;
+
+        margin-top: 16px;
+    }
+
+    span.css-process-number
+    {
+        cursor: default;
+        font-size: larger;
+        color: $base01;
+        margin-top: 24px;
+        margin-right: $css-process-above-spacing;
+        float: left;
+    }
+
+    input.css-process-show-N
+    {
+        @extend .css-process-above-search;
+        width: 20%;
     }
 }
 
