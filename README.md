@@ -23,7 +23,7 @@ ErxiDesk is a Windows desktop app built with Electron + React.
 2. Sass
 
 ## To-do
-- Add option to show top N elements using R.take(N)
+- Add tests (mocha/chai/should)
 
 - Add a visual notification to show process kill success or error
 

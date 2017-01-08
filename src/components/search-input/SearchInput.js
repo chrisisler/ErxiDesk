@@ -16,8 +16,20 @@ class SearchInput extends React.Component
 
     onChange(event)
     {
-        this.setState({ value: event.target.value });
-        this.props.handleSearchQuery(event);
+        // If a validateInput function is given, use it.
+        if (this.props.validateInput)
+        {
+            if (this.props.validateInput(event.target.value))
+            {
+                this.setState({ value: event.target.value });
+                this.props.handleSearchQuery(event);
+            }
+        }
+        else
+        {
+            this.setState({ value: event.target.value });
+            this.props.handleSearchQuery(event);
+        }
     }
 
     render()
@@ -26,10 +38,12 @@ class SearchInput extends React.Component
             <div>
                 <form>
                     <input
-                        type='text'
+                        type={'text' || this.props.type}
+                        min={this.props.min}
+                        max={this.props.max}
                         value={this.state.value}
-                        className={this.props.className}
                         onChange={this.onChange.bind(this)}
+                        className={this.props.className}
                         placeholder={this.props.placeholder}
                     />
                 </form>

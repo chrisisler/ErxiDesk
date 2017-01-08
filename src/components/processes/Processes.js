@@ -204,23 +204,39 @@ class Processes extends React.Component
             const procsNotMatchingQuery = this.state.processes
                 .filter(proc => !proc.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-            _hideProcDataNodes.call(this, procsNotMatchingQuery);
+            this._hideProcDataNodes(procsNotMatchingQuery);
         }
         else // searchQuery is a number -> user is searching for a pid.
         {
             const procsNotMatchingQuery = this.state.processes
                 .filter(proc => !proc.pid.toString().includes(searchQuery.toString()));
 
-            _hideProcDataNodes.call(this, procsNotMatchingQuery);
+            this._hideProcDataNodes(procsNotMatchingQuery);
         }
 
-        function _hideProcDataNodes(doNotDisplayTheseProcs)
+    }
+
+    /**
+     * Given an array of processes, apply `display: none` to each of those <tr> elements.
+     * @param {Array[Objects]} doNotDisplayTheseProcs - Array of process objects.
+     * @private
+     */
+    _hideProcDataNodes(doNotDisplayTheseProcs)
+    {
+        this._getProcessDataRowNodes(doNotDisplayTheseProcs, procRowNode =>
         {
-            this._getProcessDataRowNodes(doNotDisplayTheseProcs, procRowNode =>
-            {
-                procRowNode.classList.add(this.noDisplayProcessDataClass);
-            });
-        }
+            procRowNode.classList.add(this.noDisplayProcessDataClass);
+        });
+    }
+
+    /**
+     * Every character entered into the "show top N" input must be a number.
+     * @param {String} value - event.target.value from an <input/> element.
+     * @returns {Boolean} - True if all chars in <value> are integers.
+     */
+    validateShowTopNProcessesInput(value)
+    {
+        return value.split('').every(character => character.match(/\d/));
     }
 
     /**
@@ -228,8 +244,17 @@ class Processes extends React.Component
      */
     showTopNProcesses(event)
     {
-        console.log('In Processes.showTopNProcesses()');
-        console.log('event is:', event);
+        const numProcsToShowQuery = event.target.value;
+
+        this._getProcessDataRowNodes(this.state.processes, procRowNode =>
+        {
+            procRowNode.classList.remove(this.noDisplayProcessDataClass);
+        });
+
+        if (numProcsToShowQuery.length > 0)
+        {
+            this._hideProcDataNodes(R.drop(numProcsToShowQuery, this.state.processes));
+        }
     }
 
     /**
@@ -308,6 +333,7 @@ class Processes extends React.Component
                 className='css-process-show-N'
                 placeholder='Show top N'
                 handleSearchQuery={this.showTopNProcesses.bind(this)}
+                validateInput={this.validateShowTopNProcessesInput.bind(this)}
             />
         </div>;
     }
