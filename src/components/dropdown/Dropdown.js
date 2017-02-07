@@ -64,11 +64,14 @@ class Dropdown extends React.Component
         const nullObj = Object.create(null);
         const newAction = Object.assign(nullObj, { text, triggers });
 
+        // <triggers> may be a function or an array containing one function.
+        // TODO: Force <triggers> to be an array?
         if (typeof triggers === typeof Function)
         {
             triggers = [ triggers ];
         }
 
+        // TODO: Why freeze this?
         return Object.freeze(newAction);
     }
 
@@ -109,7 +112,7 @@ class Dropdown extends React.Component
         const self = this;
         document.addEventListener('click', function(event)
         {
-            // It works.
+            // TODO: Explain how this works.
             const eventDidOccurInDropdown = [...event.target.classList.values]
                 .some(_class => _class === self.dropdownClass);
 
@@ -161,7 +164,6 @@ class Dropdown extends React.Component
         this.avoidOverflow(newProps.x, newProps.y);
     }
 
-    /** I seriously hope I don't need to write docs for this function, ever. */
     hideDropdown()
     {
         // this.setState({ visibility: off });
@@ -198,13 +200,14 @@ class Dropdown extends React.Component
             }
             else
             {
-                return <li
-                    key={action.text}
-                    onClick={this.handleClick.bind(this, action.triggers)}
-                    className={this.dropdownClass}
-                >
-                    {action.text}
-                </li>;
+                return (
+                    <li
+                        key={action.text}
+                        onClick={this.handleClick.bind(this, action.triggers)}
+                        className={this.dropdownClass}>
+                        {action.text}
+                    </li>;
+                );
             }
         });
     }

@@ -1,7 +1,6 @@
 'use strict';
 
 const { getProcesses, PROCESS_KEYS } = require('./getProcesses.js');
-const Util = require('../../util/util.js');
 
 const SearchInput = require('../search-input/SearchInput.js');
 const ProcessHeader = require('./process-header/ProcessHeader.js');
@@ -17,7 +16,7 @@ class Processes extends React.Component
     {
         super(props);
 
-        // These classes interact with _processes.scss
+        // These classes interact with _processes.scss and are used for CSS.
         this.hiddenProcessDataClass = 'hidden';
         this.noDisplayProcessDataClass = 'no-display';
 
@@ -25,7 +24,7 @@ class Processes extends React.Component
     }
 
     /**
-     * Update state after removing the given array of procs.
+     * Remove the given array of processes from this.state.processes and update state.
      * @param {Array[Object]} procsToRemove - Array of process objects.
      */
     removeProcesses(procsToRemove)
@@ -35,7 +34,7 @@ class Processes extends React.Component
     }
 
     /**
-     * Adds the given <procsToInsert> to this.state and updates state.
+     * Add the given array of processes to this.state.processes and update state.
      * @param {Array[Object]} procsToInsert - Array of process objects.
      */
     insertProcesses(procsToInsert)
@@ -45,8 +44,8 @@ class Processes extends React.Component
     }
 
     /**
-     * Given an array of processes, call the given function on each process data
-     * with a matching pid.
+     * Call the given function on each table row node (process) whose PID matches
+     * the <procsToMatch> pids.
      * @param {Array[Object]} procsToMatch - Array of process objects.
      * @param {Function} func - Passed each process row node with a matching `pid`.
      * @private
@@ -54,8 +53,10 @@ class Processes extends React.Component
     _getProcessDataRowNodes(procsToMatch, func)
     {
         // <procRowNodes> is this.state.processes as HTML elements/nodes.
+        // TODO: How do I do this equivalent with React?
         const procRowNodes = document.getElementsByClassName('css-process-data');
 
+        // [...<iterable>] converts some <iterable> to an array.
         [...procRowNodes].forEach(procRowNode =>
         {
             // Relies on `pid` property being a non-Number and second in the list.
@@ -71,14 +72,22 @@ class Processes extends React.Component
         });
     }
 
+    /**
+     * Given a process, check if that table row node (process) has the
+     * this.hiddenProcessDataClass on it.
+     * @param {Object} proc - A process object.
+     * @returns {Boolean} - If the given process is hidden/dimmed or not.
+     */
     processIsHidden(proc)
     {
         let procsAreHidden = false;
+
         this._getProcessDataRowNodes([ proc ], (procRowNode) =>
         {
             procsAreHidden = procRowNode.classList.contains(this.hiddenProcessDataClass);
         });
-        return procsAreHidden
+
+        return procsAreHidden;
     }
 
     /**
@@ -119,32 +128,26 @@ class Processes extends React.Component
     /**
      * Given the name of a process, if there is more than one occurrence of that
      * process, create and return a custom process object from the combination
-     * of all processes of that name.
+     * of all processes of that name (mostly just combines the memory usage nums).
      * @param {String} processName - Name of a process.
      * @returns {Object} - A summarized "super" process.
      */
     getSummarizedProcess(processName)
     {
-        const allProcessesOfThisName = this.getProcessesOfThisName(processName);
+        const procsOfAName = this.getProcessesOfThisName(processName);
 
-        if (allProcessesOfThisName.length === 1)
-        {
-            return allProcessesOfThisName[0];
-        }
+        if (procsOfAName.length === 1) { return procsOfAName[0]; }
 
         const summarizedProcess = {
-            name: `${processName}* (${allProcessesOfThisName.length})`,
+            name: `${processName}* (${procsOfAName.length})`,
             pid: 0,
-            sessionName: allProcessesOfThisName[0].sessionName,
-            sessionNumber: allProcessesOfThisName[0].sessionNumber,
-            memoryUsage: allProcessesOfThisName.reduce(
-                (totalMemUse, proc) => totalMemUse + proc.memoryUsage , 0
-            )
+            memoryUsage: R.sum(procsOfAName.map(p => p.memoryUsage))
         };
 
         return summarizedProcess;
     }
 
+    /** Sort procs by memUse by default. */
     componentDidMount()
     {
         const doSortFromLastToFirst = true;
@@ -166,6 +169,7 @@ class Processes extends React.Component
 
         const sortValue = _processes[0][keyToSortBy];
         const ifSortValueIsString = R.partial(R.is(String), [sortValue]);
+
         const reverseOrNot = doReverseOrder ? R.reverse : R.identity;
 
         const getProcessesSortedByKey = R.pipe(
@@ -194,6 +198,7 @@ class Processes extends React.Component
 
         if (searchQuery.length === 0)
         {
+            // Unhide all processes.
             this._getProcessDataRowNodes(this.state.processes, procRowNode =>
             {
                 procRowNode.classList.remove(this.noDisplayProcessDataClass);
@@ -236,24 +241,30 @@ class Processes extends React.Component
      */
     validateShowTopNProcessesInput(value)
     {
-        return value.split('').every(character => character.match(/\d/));
+        const characters = value.split('');
+        const isNumber = R.match(/\d/);
+
+        return R.all(isNumber)(characters);
     }
 
     /**
-     * TODO
+     * When user types in "Show top N" SearchInput, they only want to see those num
+     * of processes. Given that keyboard event, display this top N processes.
+     * @param {Object} event - A keyboard event from the <input/> element.
      */
     showTopNProcesses(event)
     {
-        const numProcsToShowQuery = event.target.value;
+        const numberOfProcsToDisplay = event.target.value;
 
         this._getProcessDataRowNodes(this.state.processes, procRowNode =>
         {
             procRowNode.classList.remove(this.noDisplayProcessDataClass);
         });
 
-        if (numProcsToShowQuery.length > 0)
+        if (numberOfProcsToDisplay.length > 0)
         {
-            this._hideProcDataNodes(R.drop(numProcsToShowQuery, this.state.processes));
+            const procsToHide = R.drop(numberOfProcsToDisplay, this.state.processes);
+            this._hideProcDataNodes(procsToHide);
         }
     }
 
@@ -311,31 +322,33 @@ class Processes extends React.Component
 
     renderElementsAboveTable()
     {
-        return <div className='css-process-above'>
-            <SearchInput
-                className='css-process-search'
-                placeholder='Search name/pid'
-                handleSearchQuery={this.searchProcesses.bind(this)}
-            />
+        return (
+            <div className='css-process-above'>
+                <SearchInput
+                    className='css-process-search'
+                    placeholder='Search name/pid'
+                    handleSearchQuery={this.searchProcesses.bind(this)}
+                />
 
-            <i
-                className='material-icons css-process-refresh'
-                onClick={this.refreshProcesses.bind(this)}
-            >
-                cached
-            </i>
+                <i
+                    className='material-icons css-process-refresh'
+                    onClick={this.refreshProcesses.bind(this)}
+                >
+                    cached
+                </i>
 
-            <span className='css-process-number'>
-                {this.state.processes.length + ' Processes'}
-            </span>
+                <span className='css-process-number'>
+                    {this.state.processes.length + ' Processes listed'}
+                </span>
 
-            <SearchInput
-                className='css-process-show-N'
-                placeholder='Show top N'
-                handleSearchQuery={this.showTopNProcesses.bind(this)}
-                validateInput={this.validateShowTopNProcessesInput.bind(this)}
-            />
-        </div>;
+                <SearchInput
+                    className='css-process-show-N'
+                    placeholder='Show # processes'
+                    handleSearchQuery={this.showTopNProcesses.bind(this)}
+                    validateInput={this.validateShowTopNProcessesInput.bind(this)}
+                />
+            </div>
+        );
     }
 
     render()

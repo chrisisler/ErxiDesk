@@ -1,10 +1,7 @@
 'use strict';
 
-const {
-    PROCESS_KEYS,
-    makeProcessObj,
-    convertMemoryUsageToNumber
-} = require('../getProcesses.js');
+const { PROCESS_KEYS, zipObjBy, memoryUsageToNumber } = require('../getProcesses.js');
+
 const killProcesses = require('../killProcesses.js');
 const Dropdown = require('../../dropdown/Dropdown.js');
 const Processes = require('../Processes.js');
@@ -40,9 +37,12 @@ class ProcessData extends React.Component
     onRightClick(event)
     {
         // Build a <process> object from the given event.
-        const procRowNodeList = event.target.parentNode.childNodes;
-        let proc = makeProcessObj(procRowNodeList, PROCESS_KEYS, node => node.textContent);
-        proc = convertMemoryUsageToNumber(proc);
+        const procValuesAsNodeList = event.target.parentNode.childNodes;
+        const proc = memoryUsageToNumber(zipObjBy(
+            keyValuePair => [ keyValuePair[0], keyValuePair[1].textContent ]
+            PROCESS_KEYS,
+            procValuesAsNodeList
+        ));
 
         const dropdownActions = this.getDropdownActions(proc);
 
@@ -52,7 +52,6 @@ class ProcessData extends React.Component
         />;
 
         ReactDOM.render(dropdownComponent, document.getElementById('dropdown'));
-
     }
 
     /**
@@ -73,12 +72,12 @@ class ProcessData extends React.Component
         const removeGivenProcesses = R.partial(this.props.removeProcesses);
         const insertGivenProcesses = R.partial(this.props.insertProcesses);
 
-        const oneActionText = `"${proc.name}" (PID: ${proc.pid})`;
+        const singleActionText = `"${proc.name}" (PID: ${proc.pid})`;
 
         // The order the actions are inserted here determines what the order the user sees them in.
         let dropdownActions = [];
 
-        const killThisProcAction = Dropdown.makeActionObj(`Kill ${oneActionText}`, [
+        const killThisProcAction = Dropdown.makeActionObj(`Kill ${singleActionText}`, [
             killGivenProcesses([[proc.pid]]),
             removeGivenProcesses([[proc]])
         ]);
@@ -89,14 +88,14 @@ class ProcessData extends React.Component
 
         if (!_procIsHidden)
         {
-            const hideThisProcAction = Dropdown.makeActionObj(`Hide ${oneActionText}`, [
+            const hideThisProcAction = Dropdown.makeActionObj(`Hide ${singleActionText}`, [
                 hideGivenProcesses([[proc]])
             ]);
             dropdownActions.push(hideThisProcAction);
         }
         else
         {
-            const unhideThisProcAction = Dropdown.makeActionObj(`Unhide ${oneActionText}`, [
+            const unhideThisProcAction = Dropdown.makeActionObj(`Unhide ${singleActionText}`, [
                 unhideGivenProcesses([[proc]])
             ]);
             dropdownActions.push(unhideThisProcAction);
@@ -115,7 +114,7 @@ class ProcessData extends React.Component
 
             // Add a dropdown action to kill all procs with this name.
             const killAllProcsOfThisNameAction = Dropdown.makeActionObj(`Kill ${multiActionText}`, [
-                killGivenProcesses([ procsOfThisName.map(p => p.pid) ]),
+                killGivenProcesses([ procsOfThisName.map(R.prop('pid')) ]),
                 removeGivenProcesses([ procsOfThisName ])
             ]);
             dropdownActions.push(killAllProcsOfThisNameAction);
@@ -150,19 +149,17 @@ class ProcessData extends React.Component
     }
 
     /**
-     * Given this.props.processData as an argument, return an array of HTML elements.
+     * Return a list of <td> elements from each value of this.props.processData
      * @param {Object} processData - A process object.
-     * @returns {Array[<td>]} - An array of <td> elements containing the values of
-     *     the given processData object.
+     * @returns {Array[Object]} - The values of the given obj.
      */
     renderProcessData(processData)
     {
-        // mapProp is Array.prototype.map but for each hasOwnProperty of the given object.
-        return Util.mapProp(processData, (key, value, index, object) =>
+        return R.mapObjIndexed((value, key, obj) =>
             key === 'memoryUsage'
                 ? <td key={value}>{this._convertMemUseToString(value)}</td>
                 : <td key={value}>{value}</td>
-        );
+        )(processData);
     }
 
     render()

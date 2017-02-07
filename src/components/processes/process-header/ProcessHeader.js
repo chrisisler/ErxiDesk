@@ -10,13 +10,7 @@ class ProcessHeader extends React.Component
     {
         super(props);
 
-        this.prettyTitles = [
-            'Name',
-            'Process ID',
-            'Session Name',
-            'Session #',
-            'Memory Usage'
-        ];
+        this.prettyTitles = [ 'Name', 'Process ID', 'Memory Usage' ];
     }
 
     /**

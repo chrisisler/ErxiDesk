@@ -5,22 +5,24 @@
  * Like Array.prototype.map, but for the properties of an object.
  * @param {Object} obj - An object.
  * @param {Function} func - A function to call on each prop of <obj>.
+ * @returns {Array} - Results of calling the provided function on every prop of given obj.
  */
 module.exports = function mapProp(obj, func)
 {
     let index = 0,
-        result = [];
+        results = [];
 
     for (let key in obj)
     {
         if (obj.hasOwnProperty(key))
         {
-            const val = obj[key];
+            const value = obj[key];
             const objCopy = Object.assign({}, obj);
+            const result = func(key, value, index++, objCopy);
 
-            result.push(func(key, val, index++, objCopy));
+            results.push(result);
         }
     }
-    return result;
+    return results;
 }
 
