@@ -61,8 +61,7 @@ class Dropdown extends React.Component
      */
     static makeActionObj(text, triggers)
     {
-        const nullObj = Object.create(null);
-        const newAction = Object.assign(nullObj, { text, triggers });
+        const newAction = { text, triggers };
 
         // <triggers> may be a function or an array containing one function.
         // TODO: Force <triggers> to be an array?
@@ -72,7 +71,7 @@ class Dropdown extends React.Component
         }
 
         // TODO: Why freeze this?
-        return Object.freeze(newAction);
+        return newAction;
     }
 
     /**
@@ -204,9 +203,10 @@ class Dropdown extends React.Component
                     <li
                         key={action.text}
                         onClick={this.handleClick.bind(this, action.triggers)}
-                        className={this.dropdownClass}>
+                        className={this.dropdownClass}
+                    >
                         {action.text}
-                    </li>;
+                    </li>
                 );
             }
         });

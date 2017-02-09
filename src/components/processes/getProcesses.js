@@ -21,6 +21,7 @@ const PROCESS_KEYS = [ 'name', 'pid', 'memoryUsage' ];
 /**
  * @example 'Hello\nWorld' -> [ 'Hello', 'World' ]
  * @returns {Array[String]}
+ * @private
  */
 const _splitAtEndOfLine = R.split(OS.EOL);
 
@@ -50,11 +51,11 @@ const _swapIndex = R.curry((x, y, array) =>
  * @see R.over
  * @see R.lensProp
  * @param {String} prop - Name of a property of an object to convert to Number;
- * @param {Function} func - A function invoked with the given <prop> as the arg.
+ * @param {Function} fn - A function invoked with the given <prop> as the arg.
  * @returns {Function} - A func which, when invoked with an object as an
  *     argument, returns the given object, with <prop> as a Number.
  */
-const alterProp = R.curry((prop, func) => R.over(R.lensProp(prop), func));
+const alterProp = R.curry((prop, fn) => R.over(R.lensProp(prop), fn));
 
 /**
  * Return the given process object with its <memoryUsage> prop as a Number.

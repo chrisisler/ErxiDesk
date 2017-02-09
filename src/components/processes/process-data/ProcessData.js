@@ -37,12 +37,9 @@ class ProcessData extends React.Component
     onRightClick(event)
     {
         // Build a <process> object from the given event.
-        const procValuesAsNodeList = event.target.parentNode.childNodes;
-        const proc = memoryUsageToNumber(zipObjBy(
-            keyValuePair => [ keyValuePair[0], keyValuePair[1].textContent ]
-            PROCESS_KEYS,
-            procValuesAsNodeList
-        ));
+        // [...<iterable>] converts <iterable> to a mappable.
+        const procValues = [...event.target.parentNode.childNodes].map(R.prop('textContent'));
+        const proc = memoryUsageToNumber(R.zipObj(PROCESS_KEYS, procValues));
 
         const dropdownActions = this.getDropdownActions(proc);
 
@@ -101,7 +98,7 @@ class ProcessData extends React.Component
             dropdownActions.push(unhideThisProcAction);
         }
 
-        // If are multiple processes with this name:
+        // If are multiple processes with this name (e.g., Chrome usually has multiple instances).
         const procsOfThisName = this.props.getProcessesOfThisName(proc.name);
         const procNameNum = procsOfThisName.length;
         if (procNameNum > 1)
@@ -114,7 +111,7 @@ class ProcessData extends React.Component
 
             // Add a dropdown action to kill all procs with this name.
             const killAllProcsOfThisNameAction = Dropdown.makeActionObj(`Kill ${multiActionText}`, [
-                killGivenProcesses([ procsOfThisName.map(R.prop('pid')) ]),
+                killGivenProcesses([ procsOfThisName.map(p => p.pid) ]),
                 removeGivenProcesses([ procsOfThisName ])
             ]);
             dropdownActions.push(killAllProcsOfThisNameAction);
@@ -151,15 +148,15 @@ class ProcessData extends React.Component
     /**
      * Return a list of <td> elements from each value of this.props.processData
      * @param {Object} processData - A process object.
-     * @returns {Array[Object]} - The values of the given obj.
+     * @returns {Array[<td>]} - The values of the given obj.
      */
     renderProcessData(processData)
     {
-        return R.mapObjIndexed((value, key, obj) =>
-            key === 'memoryUsage'
-                ? <td key={value}>{this._convertMemUseToString(value)}</td>
-                : <td key={value}>{value}</td>
-        )(processData);
+        return Util.mapProp(processData, (key, value, index, obj) =>
+            <td key={value}>
+                { key === 'memoryUsage' ? this._convertMemUseToString(value) : value }
+            </td>
+        );
     }
 
     render()

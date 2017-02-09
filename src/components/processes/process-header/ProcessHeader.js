@@ -15,7 +15,8 @@ class ProcessHeader extends React.Component
 
     /**
      * Private method that given a key of a <process>, returns a title (string).
-     * @returns prettyTitle - Example: memoryUsage -> Memory Usage
+     * @param {String} processKey 
+     * @returns {String} - Example: 'memoryUsage' -> 'Memory Usage'
      * @private
      */
     _getPrettyTitleFromKey(processKey)

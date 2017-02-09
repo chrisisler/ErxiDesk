@@ -47,7 +47,7 @@ class Processes extends React.Component
      * Call the given function on each table row node (process) whose PID matches
      * the <procsToMatch> pids.
      * @param {Array[Object]} procsToMatch - Array of process objects.
-     * @param {Function} func - Passed each process row node with a matching `pid`.
+     * @param {Function} func - Applied to each process row node with a matching `pid` prop.
      * @private
      */
     _getProcessDataRowNodes(procsToMatch, func)
@@ -59,12 +59,12 @@ class Processes extends React.Component
         // [...<iterable>] converts some <iterable> to an array.
         [...procRowNodes].forEach(procRowNode =>
         {
-            // Relies on `pid` property being a non-Number and second in the list.
-            const pid = parseInt(procRowNode.childNodes[1].textContent);
+            // Relies on `pid` property being second in the list.
+            const pid = procRowNode.childNodes[1].textContent;
 
             procsToMatch.forEach(procToMatch =>
             {
-                if (pid === procToMatch.pid)
+                if (pid == procToMatch.pid)
                 {
                     func(procRowNode, procToMatch);
                 }
@@ -150,8 +150,12 @@ class Processes extends React.Component
     /** Sort procs by memUse by default. */
     componentDidMount()
     {
-        const doSortFromLastToFirst = true;
-        this.sortProcesses('memoryUsage', doSortFromLastToFirst);
+        this.setState({ processes: getProcesses() }, () =>
+        {
+            const doSortFromLastToFirst = true;
+
+            this.sortProcesses('memoryUsage', doSortFromLastToFirst);
+        });
     }
 
     /**
@@ -162,12 +166,7 @@ class Processes extends React.Component
      */
     sortProcesses(keyToSortBy, doReverseOrder)
     {
-        // If this.state.processes has not been initialized, let this functions
-        // working array of processes be a fresh copy from getProcesses().
-        // Note: This is probably not the smartest place to do that, but it works.
-        const _processes = this.state.processes.length ? this.state.processes : getProcesses();
-
-        const sortValue = _processes[0][keyToSortBy];
+        const sortValue = this.state.processes[0][keyToSortBy];
         const ifSortValueIsString = R.partial(R.is(String), [sortValue]);
 
         const reverseOrNot = doReverseOrder ? R.reverse : R.identity;
@@ -183,8 +182,20 @@ class Processes extends React.Component
             reverseOrNot
         );
 
-        const sortedProcs = getProcessesSortedByKey(_processes);
+        const sortedProcs = getProcessesSortedByKey(this.state.processes);
         this.setState({ processes: sortedProcs });
+    }
+
+    /**
+     * This func is different from <unhideProcesses>.
+     * This func removes the `no-display` class from every process.
+     */
+    redisplayAllProcs()
+    {
+        this._getProcessDataRowNodes(this.state.processes, procRowNode =>
+        {
+            procRowNode.classList.remove(this.noDisplayProcessDataClass);
+        });
     }
 
     /**
@@ -194,29 +205,31 @@ class Processes extends React.Component
      */
     searchProcesses(event)
     {
+        // <searchQuery> is $('input').val();
         const searchQuery = event.target.value;
 
         if (searchQuery.length === 0)
         {
             // Unhide all processes.
-            this._getProcessDataRowNodes(this.state.processes, procRowNode =>
-            {
-                procRowNode.classList.remove(this.noDisplayProcessDataClass);
-            });
+            this.redisplayAllProcs();
         }
         else if (isNaN(searchQuery) && typeof searchQuery === 'string')
         {
             const procsNotMatchingQuery = this.state.processes
-                .filter(proc => !proc.name.toLowerCase().includes(searchQuery.toLowerCase()));
+                .filter(proc => !R.toLower(proc.name).includes(R.toLower(searchQuery)));
 
             this._hideProcDataNodes(procsNotMatchingQuery);
         }
-        else // searchQuery is a number -> user is searching for a pid.
+        else if (Number.isInteger(Number(searchQuery)))
         {
             const procsNotMatchingQuery = this.state.processes
                 .filter(proc => !proc.pid.toString().includes(searchQuery.toString()));
 
             this._hideProcDataNodes(procsNotMatchingQuery);
+        }
+        else
+        {
+            throw new Error('searchQuery is invalid');
         }
 
     }
@@ -241,7 +254,7 @@ class Processes extends React.Component
      */
     validateShowTopNProcessesInput(value)
     {
-        const characters = value.split('');
+        const characters = R.split('', value);
         const isNumber = R.match(/\d/);
 
         return R.all(isNumber)(characters);
@@ -256,10 +269,7 @@ class Processes extends React.Component
     {
         const numberOfProcsToDisplay = event.target.value;
 
-        this._getProcessDataRowNodes(this.state.processes, procRowNode =>
-        {
-            procRowNode.classList.remove(this.noDisplayProcessDataClass);
-        });
+        this.redisplayAllProcs();
 
         if (numberOfProcsToDisplay.length > 0)
         {
@@ -271,15 +281,16 @@ class Processes extends React.Component
     /**
      * Grab a fresh batch of processes from getProcesses.js.
      * Updates state.
+     * TODO
      */
     refreshProcesses()
     {
-        this.setState({ processes: [] });
+        // this.setState({ processes: [] });
 
-        this.setState({ processes: getProcesses() }, () =>
-        {
-            this.sortProcesses('memoryUsage', true);
-        });
+        // this.setState({ processes: getProcesses() }, () =>
+        // {
+        //     this.sortProcesses('memoryUsage', true);
+        // });
     }
 
     /**
@@ -307,7 +318,7 @@ class Processes extends React.Component
     {
         return _processes.map((proc, index, array) =>
             <ProcessData
-                key={index + ' ' + proc.pid}
+                key={index + ' ' + proc.memoryUsage}
                 processData={proc}
                 getSummarizedProcess={this.getSummarizedProcess.bind(this)}
                 getProcessesOfThisName={this.getProcessesOfThisName.bind(this)}

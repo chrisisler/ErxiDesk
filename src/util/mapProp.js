@@ -9,6 +9,8 @@
  */
 module.exports = function mapProp(obj, func)
 {
+    const objCopy = Object.assign({}, obj);
+
     let index = 0,
         results = [];
 
@@ -17,7 +19,6 @@ module.exports = function mapProp(obj, func)
         if (obj.hasOwnProperty(key))
         {
             const value = obj[key];
-            const objCopy = Object.assign({}, obj);
             const result = func(key, value, index++, objCopy);
 
             results.push(result);
