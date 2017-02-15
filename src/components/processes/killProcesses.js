@@ -36,7 +36,8 @@ function killProcesses(pids, func)
 
     const options = { encoding: 'utf8' };
 
-    CP.exec(command, options, func || defaultFunc);
+    console.warn('killProcesses.js -> Killing processes is not implemented. See README.md');
+    // CP.exec(command, options, func || defaultFunc);
 }
 
 module.exports = killProcesses;

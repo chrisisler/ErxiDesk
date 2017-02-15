@@ -10,6 +10,27 @@ const R = require('ramda');
 const React = require('react'),
       ReactDOM = require('react-dom');
 
+/**
+ * Return <objects> whose values of <prop> don't include <searchQuery>.
+ * With a <transform> function applied to <searchQuery> and each <objects>.
+ * @see R.reject (reject is the opposite of filter)
+ * @param {String} prop - A key of an obj in <objects>.
+ * @param {String} searchQuery - Value of an obj in <objects> to search for.
+ * @param {Function} transform - Applied to each <objects> and to <searchQuery>.
+ * @param {Array[Object]} objects - List of elements to filter through.
+ * @returns {Array[Object]} - <objects> with <prop> whose value does NOT contain <searchQuery>.
+ */
+const rejectPropMatches = R.curryN(4, (prop, searchQuery, transform, objects) => {
+    const _rejectPropMatches = R.reject(
+        R.pipe(
+            R.prop(prop),
+            transform,
+            R.contains(transform(searchQuery))
+        )
+    );
+    return _rejectPropMatches(objects);
+});
+
 class Processes extends React.Component
 {
     constructor(props)
@@ -215,15 +236,18 @@ class Processes extends React.Component
         }
         else if (isNaN(searchQuery) && typeof searchQuery === 'string')
         {
-            const procsNotMatchingQuery = this.state.processes
-                .filter(proc => !R.toLower(proc.name).includes(R.toLower(searchQuery)));
+            // const procsNotMatchingQuery = this.state.processes
+            //     .filter(proc => !R.toLower(proc.name).includes(R.toLower(searchQuery)));
+            const procsNotMatchingQuery = rejectPropMatches('name', searchQuery, R.toLower, this.state.processes);
 
             this._hideProcDataNodes(procsNotMatchingQuery);
         }
         else if (Number.isInteger(Number(searchQuery)))
         {
-            const procsNotMatchingQuery = this.state.processes
-                .filter(proc => !proc.pid.toString().includes(searchQuery.toString()));
+            // const procsNotMatchingQuery = this.state.processes
+            //     .filter(proc => !proc.pid.toString().includes(searchQuery.toString()));
+            // const procsNotMatchingQuery = rejectPropMatches('pid', Number(searchQuery), R.toString, this.state.processes); // May have to do this.
+            const procsNotMatchingQuery = rejectPropMatches('pid', searchQuery, R.toString, this.state.processes);
 
             this._hideProcDataNodes(procsNotMatchingQuery);
         }
