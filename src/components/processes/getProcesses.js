@@ -24,7 +24,7 @@ const _splitAtEndOfLine = R.split(OS.EOL);
 
 /**
  * Return a copy of the array with elements at the given indices swapped.
- * This func is used for non-Windows functional pipeline.
+ * This func is used for non-Windows functional pipeline (because of `ps` column order).
  * @param {Number} x - The index of the first element to swap.
  * @param {Number} y - The index of the second element to swap.
  * @param {Array[*]} array - The array.
@@ -38,7 +38,7 @@ const _swapIndex = R.curryN(3, (index1, index2, array) => {
 });
 
 /**
- * Return a copy of obj by applying a transformation function to the specified prop.
+ * Apply <fn> to <prop> (of <obj>) and return the resulting object (which is a copy).
  * This func is the same as `prop => R.over(R.lensProp(prop))` (because of currying).
  * @see R.over @see R.lensProp
  * @param {String} prop - Key of the given object.
@@ -50,11 +50,10 @@ const mapProp = R.curryN(3, (prop, fn, obj) => R.over(R.lensProp(prop), fn, obj)
 
 /**
  * Return the given process object with its <memoryUsage> prop as a Number.
- * This func is used for Windows functional pipeline.
+ * @see mapProp
  * @example "12,032 K" -> 12032
  * @param {Object} - A process object with a <memoryUsage> property.
  * @returns {Object} - A process object with <memoryUsage> as a Number.
- * @see mapProp
  */
 const memoryUsageToNumber = mapProp('memoryUsage', R.pipe(
     R.dropLast(2),
@@ -187,9 +186,7 @@ const nonWindowsSanitizerFuncs = {
      * @param {Array[String]}
      * @returns {Array[Object]}
      */
-    zipArrayWithKeysToObj: R.map(
-        R.zipObj(PROCESS_KEYS)
-    ),
+    zipArrayWithKeysToObj: R.map(R.zipObj(PROCESS_KEYS)),
 
     convertPIDAndMemoryUsageToNumber: R.map(
         R.pipe(
@@ -232,6 +229,12 @@ function __getProcesses(windowsSanitizerFuncs, nonWindowsSanitizerFuncs)
 
 // The same as __getProcesses except it doesn't require the arguments.
 const getProcesses = __getProcesses(windowsSanitizerFuncs, nonWindowsSanitizerFuncs);
+
+// const procs = getProcesses();
+// const fn = R.pipe(
+//     R.identity
+// );
+// console.log(fn(procs));
 
 module.exports = {
     mapProp,

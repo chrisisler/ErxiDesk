@@ -22,11 +22,13 @@ const defaultFunc = function(error, stdout, stderr)
 /**
  * Wrapper around CP.exec().
  * Given an array of process IDs attempt to kill all those processes.
- * @param {Array[Number]} pids - IDs of a <process> object.
+ * @param {Array} processes - A list of process objects.
  * @param {Function} func - Callback - TODO: Am I going to use this??.
  */
-function killProcesses(pids, func)
+function killProcesses(processes, func)
 {
+    const pids = processes.map(p => p.pid);
+
     let command = `taskkill`;
 
     pids.forEach(pid =>

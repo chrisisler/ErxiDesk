@@ -64,86 +64,76 @@ class ProcessData extends React.Component
      */
     getDropdownActions(proc)
     {
-        /**
-         * These functions are partially applied to prepare them for usage as
-         * onclick event listeners. Each possible action available in the
-         * dropdown context menu will trigger and invoke each function given
-         * in the second argument of Dropdown.makeActionObj. This allows the
-         * code in Dropdown.js to be unaware of the arguments needed per function.
-         */
-        const killGivenProcesses   = R.partial(killProcesses);
-        const hideGivenProcesses   = R.partial(this.props.hideProcesses);
-        const unhideGivenProcesses = R.partial(this.props.unhideProcesses);
-        const removeGivenProcesses = R.partial(this.props.removeProcesses);
-        const insertGivenProcesses = R.partial(this.props.insertProcesses);
+        // These functions are partially applied to prepare them for usage as
+        // onclick event listeners. Each possible action available in the
+        // dropdown context menu will trigger and invoke each function given
+        // in the second argument of Dropdown.makeActionObj. This allows the
+        // code in Dropdown.js to be unaware of the arguments needed per function.
+        const _killProcs   = R.partial(killProcesses);
+        const _hideProcs   = R.partial(this.props.hideProcesses);
+        const _unhideProcs = R.partial(this.props.unhideProcesses);
+        const _removeProcs = R.partial(this.props.removeProcesses);
+        const _insertProcs = R.partial(this.props.insertProcesses);
 
         const singleActionText = `"${proc.name}" (PID: ${proc.pid})`;
 
         // The order the actions are pushed determines the order they are seen in.
         let dropdownActions = [];
 
-        // Add an action to kill the process the user just right-clicked.
         dropdownActions.push(Dropdown.makeActionObj(`Kill ${singleActionText}`, [
-            killGivenProcesses([[proc.pid]]),
-            removeGivenProcesses([[proc]])
+            _killProcs([[proc]]),
+            _removeProcs([[proc]])
         ]));
 
-        // This if statement is written this way to preserve the order of elems pushed.
-        const _procIsHidden = this.props.processIsHidden(proc);
+        dropdownActions.push(Dropdown.makeActionObj(`Remove ${singleActionText}`, [
+            _removeProcs([[proc]])
+        ]));
 
-        if (!_procIsHidden)
-        {
-            // Add an action to hide the process the user just right-clicked.
-            dropdownActions.push(Dropdown.makeActionObj(`Hide ${singleActionText}`, [
-                hideGivenProcesses([[proc]])
-            ]));
-        }
-        else
-        {
-            // Add an action to unhide the process the user just right-clicked.
-            dropdownActions.push(Dropdown.makeActionObj(`Unhide ${singleActionText}`, [
-                unhideGivenProcesses([[proc]])
-            ]));
-        }
+        const procIsNotHidden = !this.props.processIsHidden(proc);
+        const hideOrUnhideText = procIsNotHidden ? 'Hide' : 'Unhide';
 
-        // If there are multiple processes with this name (e.g., Chrome usually has multiple instances).
-        const procsOfThisName = this.props.getProcessesOfThisName(proc.name);
-        const numberOfProcsWithName = procsOfThisName.length;
-        if (numberOfProcsWithName > 1)
+        // Add an action to hide or unhide the process based on if it is hidden or not.
+        dropdownActions.push(Dropdown.makeActionObj(
+            `${hideOrUnhideText} ${singleActionText}`, [
+            procIsNotHidden ? _hideProcs([[proc]]) : _unhideProcs([[proc]])
+        ]));
+
+        // If there are multiple processes with this name (e.g., Chrome has multiple instances).
+        const sameNameProcs = this.props.getSameNameProcesses(proc);
+        const numSameNameProcs = sameNameProcs.length;
+        if (numSameNameProcs > 1)
         {
-            const bothOrAllN = (numberOfProcsWithName === 2) ? 'both' : `all ${numberOfProcsWithName}`;
+            const bothOrAllN = (numSameNameProcs === 2) ? 'both' : `all ${numSameNameProcs}`;
             const multiActionText = `${bothOrAllN} "${proc.name}" processes`;
-
             const divider = Dropdown.makeDivider();
-            dropdownActions.push(divider);
 
-            // Add a dropdown action to kill all procs with this name.
-            dropdownActions.push(Dropdown.makeActionObj(`Kill ${multiActionText}`, [
-                killGivenProcesses([ procsOfThisName.map(p => p.pid) ]),
-                removeGivenProcesses([ procsOfThisName ])
-            ]));
+            dropdownActions.push(
+                divider,
 
-            if (!_procIsHidden)
-            {
-                // Add a dropdown action to hide all procs with this name.
-                dropdownActions.push(Dropdown.makeActionObj(`Hide ${multiActionText}`, [
-                    hideGivenProcesses([ procsOfThisName ])
-                ]));
-            }
-            else
-            {
-                // Add a dropdown action to unhide all procs with this name.
-                dropdownActions.push(Dropdown.makeActionObj(`Unhide ${multiActionText}`, [
-                    unhideGivenProcesses([ procsOfThisName ])
-                ]));
-            }
+                // Add a dropdown action to kill all procs with this name.
+                Dropdown.makeActionObj(`Kill ${multiActionText}`, [
+                    _killProcs([ sameNameProcs ]),
+                    _removeProcs([ sameNameProcs ])
+                ]),
 
-            dropdownActions.push(divider);
+                // Add an action to not show all procs with this name.
+                Dropdown.makeActionObj(`Remove ${multiActionText}`, [
+                    _removeProcs([sameNameProcs])
+                ]),
 
-            // Add a dropdown action to summarized this proc.
-            dropdownActions.push(Dropdown.makeActionObj(`Summate ${multiActionText}`, [
-                insertGivenProcesses([ [this.props.getSummarizedProcess(proc.name)] ])
-            ]));
+                // Add an action to hide or unhide procs of this name if they're hidden or not.
+                Dropdown.makeActionObj(
+                    `${hideOrUnhideText} ${multiActionText}`, [
+                    procIsNotHidden ? _hideProcs([sameNameProcs]) : _unhideProcs([sameNameProcs])
+                ]),
+
+                divider,
+
+                // Add a dropdown action to summarize this process.
+                Dropdown.makeActionObj(`Summate ${multiActionText}`, [
+                    _insertProcs([[this.props.getSummatedProcess(proc)]])
+                ])
+            );
         }
 
         return dropdownActions;
@@ -178,8 +168,8 @@ class ProcessData extends React.Component
 
 ProcessData.propTypes = {
     processData:            React.PropTypes.object.isRequired,
-    getProcessesOfThisName: React.PropTypes.func.isRequired,
-    getSummarizedProcess:   React.PropTypes.func.isRequired,
+    getSameNameProcesses: React.PropTypes.func.isRequired,
+    getSummatedProcess:   React.PropTypes.func.isRequired,
     removeProcesses:        React.PropTypes.func.isRequired,
     insertProcesses:        React.PropTypes.func.isRequired,
     hideProcesses:          React.PropTypes.func.isRequired,
@@ -189,8 +179,8 @@ ProcessData.propTypes = {
 
 ProcessData.defaultProps = {
     processData:            {},
-    getProcessesOfThisName: function() {},
-    getSummarizedProcess:   function() {},
+    getSameNameProcesses: function() {},
+    getSummatedProcess:   function() {},
     removeProcesses:        function() {},
     insertProcesses:        function() {},
     hideProcesses:          function() {},

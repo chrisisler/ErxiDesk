@@ -136,36 +136,32 @@ class Processes extends React.Component
     }
 
     /**
-     * Given the name of a process, return all processes in this.state.processes
-     * that share that name.
-     * @param {String} processName - The `name` property of a process obj.
+     * @param {Object} process - A process obj.
      * @returns {Array[Object]} - All procs with that name.
      */
-    getProcessesOfThisName(processName)
+    getSameNameProcesses(process)
     {
-        return this.state.processes.filter(p => p.name === processName);
+        return this.state.processes.filter(p => p.name === process.name);
     }
 
     /**
      * Given the name of a process, if there is more than one occurrence of that
      * process, create and return a custom process object from the combination
      * of all processes of that name (mostly just combines the memory usage nums).
-     * @param {String} processName - Name of a process.
+     * @param {Object} processName - A process object.
      * @returns {Object} - A summarized "super" process.
      */
-    getSummarizedProcess(processName)
+    getSummatedProcess(process)
     {
-        const procsOfAName = this.getProcessesOfThisName(processName);
+        const sameNameProcs = this.getSameNameProcesses(process.name);
 
-        if (procsOfAName.length === 1) { return procsOfAName[0]; }
+        if (sameNameProcs.length === 1) { return sameNameProcs[0]; }
 
-        const summarizedProcess = {
-            name: `${processName}* (${procsOfAName.length})`,
+        return {
+            name: `${process.name}* [${sameNameProcs.length}]`,
             pid: 0,
-            memoryUsage: R.sum(procsOfAName.map(p => p.memoryUsage))
+            memoryUsage: R.sum(sameNameProcs.map(p => p.memoryUsage))
         };
-
-        return summarizedProcess;
     }
 
     /** Sort procs by memUse by default. */
@@ -236,18 +232,15 @@ class Processes extends React.Component
         }
         else if (isNaN(searchQuery) && typeof searchQuery === 'string')
         {
-            // const procsNotMatchingQuery = this.state.processes
-            //     .filter(proc => !R.toLower(proc.name).includes(R.toLower(searchQuery)));
-            const procsNotMatchingQuery = rejectPropMatches('name', searchQuery, R.toLower, this.state.processes);
+            const procsNotMatchingQuery = rejectPropMatches(
+                'name', searchQuery, R.toLower, this.state.processes);
 
             this._hideProcDataNodes(procsNotMatchingQuery);
         }
         else if (Number.isInteger(Number(searchQuery)))
         {
-            // const procsNotMatchingQuery = this.state.processes
-            //     .filter(proc => !proc.pid.toString().includes(searchQuery.toString()));
-            // const procsNotMatchingQuery = rejectPropMatches('pid', Number(searchQuery), R.toString, this.state.processes); // May have to do this.
-            const procsNotMatchingQuery = rejectPropMatches('pid', searchQuery, R.toString, this.state.processes);
+            const procsNotMatchingQuery = rejectPropMatches(
+                'pid', Number(searchQuery), R.toString, this.state.processes);
 
             this._hideProcDataNodes(procsNotMatchingQuery);
         }
@@ -265,7 +258,7 @@ class Processes extends React.Component
      */
     _hideProcDataNodes(doNotDisplayTheseProcs)
     {
-        this._getProcessDataRowNodes(doNotDisplayTheseProcs, procRowNode =>
+        this._getProcessDataRowNodes(doNotDisplayTheseProcs, (procRowNode) =>
         {
             procRowNode.classList.add(this.noDisplayProcessDataClass);
         });
@@ -281,7 +274,7 @@ class Processes extends React.Component
         const characters = R.split('', value);
         const isNumber = R.match(/\d/);
 
-        return R.all(isNumber)(characters);
+        return R.all(isNumber, characters);
     }
 
     /**
@@ -344,8 +337,8 @@ class Processes extends React.Component
             <ProcessData
                 key={index + ' ' + proc.memoryUsage}
                 processData={proc}
-                getSummarizedProcess={this.getSummarizedProcess.bind(this)}
-                getProcessesOfThisName={this.getProcessesOfThisName.bind(this)}
+                getSummatedProcess={this.getSummatedProcess.bind(this)}
+                getSameNameProcesses={this.getSameNameProcesses.bind(this)}
                 removeProcesses={this.removeProcesses.bind(this)}
                 insertProcesses={this.insertProcesses.bind(this)}
                 hideProcesses={this.hideProcesses.bind(this)}
