@@ -18,7 +18,7 @@ ErxiDesk is a desktop app built with Electron and React.
 - ```npm run dev```
 - ```npm start```
 
-## To-do
+## Roadmap
 - Add ability to start processes
 - Add jsx-compatible tests
 - Add a visual notification to show process kill success or error
