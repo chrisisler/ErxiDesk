@@ -26,8 +26,9 @@
 
 'use strict';
 
-const React = require('react'),
-      ReactDOM = require('react-dom');
+const R = require('ramda');
+const React = require('react');
+const ReactDOM = require('react-dom');
 
 // For this.state.visibility -- it's CSS.
 const on  = 'visible';
@@ -39,7 +40,7 @@ class Dropdown extends React.Component
     {
         super(props);
 
-        this.dropdownClass = 'js-dropdown-menu';
+        this.cssClass = 'js-dropdown-menu';
         this.dividerClass = 'divider';
 
         this.state = {
@@ -50,58 +51,32 @@ class Dropdown extends React.Component
     }
 
     /**
-     * This function and makeActions are the two ways to create an `action` object
-     * for this dropdown.
+     * This function and makeActions are the two ways to create an `action` object for this dropdown.
      * Builds and returns an immutable `action` object to be part of this.props.actions.
-     * @param {String} text - Describes what will happen when this action is clicked.
-     * @param {Array[Function]|Function} triggers - Function or list of functions to
-     *     invoke when this action is clicked.
-     * @returns {Object} - An `action` object.
      * @static
+     * @param {String} text - Describes what will happen when this action is clicked.
+     * @param {Array[Function]|Function} triggers - Fn or list of fns invoked when clicked.
+     * @returns {Object} - An `action` object.
      */
-    static makeActionObj(text, triggers)
+    static newAction(text, triggers)
     {
-        const newAction = { text, triggers };
-
         // <triggers> may be a function or an array containing one function.
-        // TODO: Force <triggers> to be an array?
         if (typeof triggers === typeof Function)
         {
             triggers = [ triggers ];
         }
-
-        // TODO: Why freeze this?
-        return newAction;
-    }
-
-    /**
-     * This function and makeActionObj are the two ways to create an `action` object
-     * for this dropdown.
-     * Uses Dropdown.makeActionObj to return an array of actions.
-     * @param {Array[Object]} previousActions - List of actions for use as this.props.actions.
-     * @param {String} text - Describes what will happen when this action is clicked.
-     * @param {Array[Function]|Function} triggers - Function or list of functions to
-     *     invoke when this action is clicked.
-     * @returns {Array[Object]} - A new array of actions with <newAction> added.
-     * @static
-     */
-    static makeActions(previousActions, text, triggers)
-    {
-        let newActions = [...previousActions]; // Clone the array.
-        const newAction = Dropdown.makeActionObj(text, triggers);
-
-        newActions.push(newAction);
-        return newActions;
+        return { text, triggers };
     }
 
     /**
      * Create a divider for the dropdown menu.
-     * @returns {Object} - A divider `action` object.
+     * @see this.renderActions and _Dropdown.scss
      * @static
+     * @returns {Object} - A divider `action` object.
      */
     static makeDivider()
     {
-        return Dropdown.makeActionObj('divider', null);
+        return Dropdown.newAction('divider', null);
     }
 
     componentDidMount()
@@ -109,13 +84,12 @@ class Dropdown extends React.Component
         this.avoidOverflow(this.state.left, this.state.top);
 
         const self = this;
+
         document.addEventListener('click', function(event)
         {
-            // TODO: Explain how this works.
-            const eventDidOccurInDropdown = [...event.target.classList.values]
-                .some(_class => _class === self.dropdownClass);
+            const userClickedDropdown = R.any(R.equals(self.cssClass), [...event.target.classList.values]);
 
-            if (!eventDidOccurInDropdown)
+            if (!userClickedDropdown)
             {
                 self.hideDropdown();
                 document.removeEventListener('click', this);
@@ -182,7 +156,7 @@ class Dropdown extends React.Component
     }
 
     /**
-     * Given an array of action objects (from this.makeActionObj), map each of
+     * Given an array of action objects (from this.newAction), map each of
      * them to an html <li/> element with an onClick listener set to the
      * action.invoke function property.
      * Also adds a divider (line) when action.text === 'divider'.
@@ -195,7 +169,7 @@ class Dropdown extends React.Component
         {
             if (action.text === this.dividerClass)
             {
-                return <li key={index} className={`${this.dropdownClass} ${this.dividerClass}`}/>;
+                return <li key={index} className={`${this.cssClass} ${this.dividerClass}`}/>;
             }
             else
             {
@@ -203,7 +177,7 @@ class Dropdown extends React.Component
                     <li
                         key={action.text}
                         onClick={this.handleClick.bind(this, action.triggers)}
-                        className={this.dropdownClass}
+                        className={this.cssClass}
                     >
                         {action.text}
                     </li>
@@ -216,7 +190,7 @@ class Dropdown extends React.Component
     {
         return (
             <div
-                className={`css-dropdown-wrap ${this.dropdownClass}`}
+                className={`css-dropdown-wrap ${this.cssClass}`}
                 style={this.state}
             >
                 <ul>

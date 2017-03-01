@@ -12,15 +12,15 @@
 'use strict';
 
 const R = require('ramda');
-const CP = require('child_process');
+const child_process = require('child_process');
 const OS = require('os');
+const q = require('q');
 
 // Contains order and naming of keys of every `process` object, independent of OS/platform.
 // Is used in functional pipelines ("sanitizerFuncs")
 const PROCESS_KEYS = [ 'name', 'pid', 'memoryUsage' ];
 
-/** @private */
-const _splitAtEndOfLine = R.split(OS.EOL);
+const splitAtEOL = R.split(OS.EOL);
 
 /**
  * Return a copy of the array with elements at the given indices swapped.
@@ -29,9 +29,8 @@ const _splitAtEndOfLine = R.split(OS.EOL);
  * @param {Number} y - The index of the second element to swap.
  * @param {Array[*]} array - The array.
  * @return {Array[*]} - A new array with the elements swapped.
- * @private
  */
-const _swapIndex = R.curryN(3, (index1, index2, array) => {
+const swapIndexes = R.curryN(3, (index1, index2, array) => {
     const element = array[index1];
     const arrayWithoutElement = R.without([ element ], array);
     return R.insert(index2, element, arrayWithoutElement);
@@ -40,7 +39,7 @@ const _swapIndex = R.curryN(3, (index1, index2, array) => {
 /**
  * Apply <fn> to <prop> (of <obj>) and return the resulting object (which is a copy).
  * This func is the same as `prop => R.over(R.lensProp(prop))` (because of currying).
- * @see R.over @see R.lensProp
+ * @example mapProp('id', Number, { id: '372', name: 'foo' }); //=> { id: 372, name: 'foo' }
  * @param {String} prop - Key of the given object.
  * @param {Function} fn - Applied to the value of the selected prop.
  * @param {Object} obj - Object to alter.
@@ -50,196 +49,135 @@ const mapProp = R.curryN(3, (prop, fn, obj) => R.over(R.lensProp(prop), fn, obj)
 
 /**
  * Return the given process object with its <memoryUsage> prop as a Number.
- * @see mapProp
  * @example "12,032 K" -> 12032
  * @param {Object} - A process object with a <memoryUsage> property.
  * @returns {Object} - A process object with <memoryUsage> as a Number.
  */
-const memoryUsageToNumber = mapProp('memoryUsage', R.pipe(
+const memUseToNum = mapProp('memoryUsage', R.pipe(
     R.dropLast(2),
     R.replace(',', ''),
-    parseInt
+    Number
 ));
 
 /**
- * Creates a new object from a list of keys and a list of values by applying
- * the given function to each equally-positioned pair in the lists (key first).
- * Key/value pairing is truncated to the length of the shorter list.
- * @see R.zipWith @see R.fromPairs
- * @param {Function} fn - Input: [ keyN, valN ] Output: [ key, val ]
- * @param {Array[*]} keys - Array whose elements will be the keys.
- * @param {Array[*]} vals - Array whose elements will be the values.
- * @returns {Object} - The obj made by combining same-index elements using <fn>.
+ * Not used in ./getProcess.js, only exported for external use.
+ * @example 87108 -> '87,108 K'
+ * @param {Object} - A processData object.
+ * @returns {Object} - Object with memoryUsage prop as a String.
  */
-// const zipObjBy = R.curryN(3, (fn, keys, vals) => {
-//     const customZipFunc = R.pipe(R.pair, fn);
-//     const arrayOfKeyValuePairs = R.zipWith(customZipFunc, keys, vals);
-//     const obj = R.fromPairs(arrayOfKeyValuePairs);
-//     return obj;
-// });
+const memUseToStr = mapProp('memoryUsage', R.pipe(
+    R.unless(R.is(String), R.toString),
+    R.reverse,
+    R.splitEvery(3), R.flatten, R.join(','),
+    R.reverse,
+    R.concat(R.__, ' K')
+));
 
 /**
- * A namespace for Windows sanitizer functions which act as a pipeline
- * which manipulates the output from `tasklist` to an array of objects.
- * Functions are invoked one at a time, in the order seen below.
+ * Return the given process object with its <pid> prop as a Number.
+ * @param {Object} obj - A process obj.
+ * @returns {Object} - A copy of the given object with <pid> prop as a Number
  */
-const windowsSanitizerFuncs = {
+const pidToNum = mapProp('pid', Number);
 
-    /**
-     * @see R.zipObj
-     * @param {String} - CRLF delimited string.
-     * @returns {Array[Object]}
-     */
-    convertTasklistOutputToArrayOfObjects: R.pipe(
-        _splitAtEndOfLine,
-        R.map(
-            R.pipe(
-                // '"foo", "bar"' -> [ 'foo', 'bar' ]
-                str => JSON.parse(`[${str}]`),
-
-                // R.zipObj(['k1', 'k2'], ['v1', 'v2']) -> { k1: v1, k2: v2 }
-                R.zipObj([ 'name', 'pid', 'sessionName', 'sessionNumber', 'memoryUsage' ])
-            )
-        )
-    ),
-
-    /**
-     * Converts PID prop of all objs from string to Number.
-     * @param {Array[Object]}
-     * @returns {Array[Object]}
-     */
-    convertPIDsToNumbers: R.map(mapProp('pid', Number)),
-
-    /**
-     * Removes the sessionName and sessionNumber props from objects.
-     * @param {Array[Object]}
-     * @returns {Array[Object]}
-     */
-    removeSessionNameAndSessionNumberProps: R.map(R.pick(PROCESS_KEYS)),
-
-    /**
-     * For some reason, some proc objects have undefined memoryUsage.
-     * Remove those objs whose memoryUsage prop is falsy.
-     * @param {Array[Object]}
-     * @returns {Array[Object]}
-     */
-    filterProcessesWithFalsyMemoryUse: R.filter(R.prop('memoryUsage')),
-
-    /**
-     * Maps a memoryUsage prop to Number.
-     * @example "12,032 K" -> 12032.
-     * @param {Array[Object]}
-     * @returns {Array[Object]}
-     */
-    mapMemoryUsageToNumber: R.map(memoryUsageToNumber),
-
-    /**
-     * @example "chrome.exe" -> "chrome"
-     * @example "something" -> "something"
-     * @param {Array[Object]}
-     * @returns {Array[Object]}
-     */
-    filterExeFromName: R.map(
-        mapProp('name', R.when(
-            R.test(/\.exe/i),
-            R.dropLast(4)
-        ))
-    )
-};
-
-/**
- * `ps` returns a string to be piped through the functions below, in order.
- *
- *
- * @param {String} - dirtyProcesses: The output of the `ps` command.
- * @returns {Array[Object]} - cleanProcesses: Array of process objects.
- * @private
- */
-const nonWindowsSanitizerFuncs = {
-
-    /**
-     * @param {String} - Output from `ps` (on non-Windows box).
-     * @returns {Array[String]}
-     */
-    convertPSOutputToArray: R.pipe(
-        _splitAtEndOfLine,
-        R.map(
-            R.pipe(
-                R.trim,
-                R.replace(/\s+/g, '--'),
-                R.split('--')
-            )
-        )
-    ),
-
-    // Rearrange element order to fit <PROCESS_KEYS> so we can use R.zipObj.
-    permuteIndexes: R.map(
+// Manipulatees the output from `tasklist` to a list of objects.
+const windowsProcessOutputSanitizer = R.pipe(
+    // Input: String - CRLF delimited.
+    // Output Array[Object]
+    splitAtEOL,
+    R.map(
         R.pipe(
-            _swapIndex(0, 2),
-            _swapIndex(1, 2)
+            // Input: '"foo", "bar"'
+            // Output: [ 'foo', 'bar' ]
+            str => JSON.parse(`[${str}]`),
+
+            R.zipObj([ 'name', 'pid', 'sessionName', 'sessionNumber', 'memoryUsage' ]),
+
+            // Convert PID prop of all objs from string to Number.
+            pidToNum,
+
+            // Only retain the props of the given obj that are included in PROCESS_KEYS.
+            R.pick(PROCESS_KEYS)
         )
     ),
+    // For some reasong, some objs have falsy memuse which throws an error. Remove those.
+    R.filter(R.prop('memoryUsage')),
 
-    /**
-     * TODO: Write a better name for this key.
-     * @see R.zipObj
-     * @param {Array[String]}
-     * @returns {Array[Object]}
-     */
-    zipArrayWithKeysToObj: R.map(R.zipObj(PROCESS_KEYS)),
-
-    convertPIDAndMemoryUsageToNumber: R.map(
+    // Convert memoryUsage prop to Number and remove ".exe" from name if applicable.
+    R.map(
         R.pipe(
-            mapProp('pid', parseInt),
-            mapProp('memoryUsage', parseInt)
+            memUseToNum,
+            mapProp('name', R.when(
+                R.test(/\.exe/i),
+                R.dropLast(4)
+            ))
         )
     )
-};
+);
 
 /**
- * This is the private version of <getProcesses> which does the same thing,
- * except specifies in its arguments that it reaches out to access both
- * <windowsSanitizerFuncs> and <nonWindowsSanitizerFuncs> to be a pure function.
- * @param {Object} windowsSanitizerFuncs - Namespace for Windows pipeline.
- * @param {Object} nonWindowsSanitizerFuncs - Namespace for non-Windows pipeline.
- * @returns {Function} which returns {Array[Object]} - The currently running processes.
- * @private
+ * `ps` returns a string to be piped through the functions below.
+ * @param {String} - The output of the `ps` command.
+ * @returns {Array[Object]} - Array of process objects.
  */
-function __getProcesses(windowsSanitizerFuncs, nonWindowsSanitizerFuncs)
+const nonWindowsProcessOutputSanitizer = R.pipe(
+    // Input: String - output from `ps` command.
+    // Output: Array[String]
+    splitAtEOL,
+    R.map(
+        R.pipe(
+            R.trim,
+            R.replace(/\s+/g, '--'),
+            R.split('--'),
+
+            // Rearrange element order to fit <PROCESS_KEYS> so we can use R.zipObj.
+            swapIndexes(0, 2),
+            swapIndexes(1, 2),
+
+            // Input: Array[String] - Values of process objects
+            // Output: Array[Object] - Process objects.
+            R.zipObj(PROCESS_KEYS),
+
+            // Convert PID and memoryUsage to Numbers
+            pidToNum,
+            memUseToNum
+        )
+    )
+);
+
+/**
+ * Returns the currently running processes on this machine, async or sync
+ * depending on the provided boolean flag.
+ *
+ * @private
+ * @param {Boolean} doAsync - Whether to retrieve processes asynchronously or not.
+ * @param {Object} windowsProcessOutputSanitizer - Contains functions that clean up `tasklist` output.
+ * @param {Object} nonWindowsProcessOutputSanitizer - Contains funcs that clean up `ps` output.
+ * @returns {Promise|Array[Object]} - Processes or a processes-returning promise.
+ */
+function __getProcesses(doAsync, windowsProcessOutputSanitizer, nonWindowsProcessOutputSanitizer)
 {
     const isWindows = R.test(/^win/, process.platform);
-
     const command = isWindows ? 'tasklist /fo csv /nh' : 'ps -axco pid=,rss=,command=';
-    const sanitizerFuncs = isWindows ? windowsSanitizerFuncs : nonWindowsSanitizerFuncs;
+    const sanitize = isWindows ? windowsProcessOutputSanitizer : nonWindowsProcessOutputSanitizer;
 
-    const dirtyProcesses = CP.execSync(command, { encoding: 'utf8' });
+    const options = { encoding: 'utf8' };
 
-    // This does a couple things:
-    // 1. Makes it so that the values of <sanitizerFuncs> are platform-independent.
-    // 2. Allows us to add/remove functions without needed to be hard-coded here.
-    // 3. Uses spread syntax.
-    const clean = R.pipe(...R.values(sanitizerFuncs));
-
-    const cleanProcesses = clean(dirtyProcesses);
-
-    return function() {
-        return cleanProcesses
-    };
+    return doAsync
+        ? q.nfcall(child_process.exec, command, options).then(R.pipe(R.head, sanitize))
+        : sanitize(child_process.execSync(command, options));
 }
 
-// The same as __getProcesses except it doesn't require the arguments.
-const getProcesses = __getProcesses(windowsSanitizerFuncs, nonWindowsSanitizerFuncs);
-
-// const procs = getProcesses();
-// const fn = R.pipe(
-//     R.identity
-// );
-// console.log(fn(procs));
+const getProcessesSync = () => __getProcesses(false, windowsProcessOutputSanitizer, nonWindowsProcessOutputSanitizer);
+const getProcessesAsync = () => __getProcesses(true, windowsProcessOutputSanitizer, nonWindowsProcessOutputSanitizer);
 
 module.exports = {
     mapProp,
-    getProcesses,
-    memoryUsageToNumber,
-    PROCESS_KEYS
+    getProcessesAsync,
+    getProcessesSync,
+    memUseToNum,
+    memUseToStr,
+    PROCESS_KEYS,
+    pidToNum
 };
 

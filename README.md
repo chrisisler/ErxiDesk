@@ -19,13 +19,13 @@ ErxiDesk is a desktop app built with Electron and React.
 - ```npm start```
 
 ## To-do
-- getProcesses -> async (via q.js)
-- procs -> cant search and sort -> change sortProcs to grab procs from _getProcessDataRowNodes/querySelector
 - Add ability to start processes
 - Add jsx-compatible tests
 - Add a visual notification to show process kill success or error
 - Fix table header and top-bar for processes
 - Add button at bottom of processes table to scroll back to top (unless already at top)
 - Add tabs/header
-- refresh button isnt working
 
+### Deadline Range
+
+I will stop working on ErxiDesk sometime between May 6 and Nov 6 to move forward with other projects.

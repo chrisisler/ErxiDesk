@@ -1,14 +1,13 @@
 'use strict';
 
-const { getProcesses, PROCESS_KEYS } = require('./getProcesses.js');
-
+const { getProcessesSync, getProcessesAsync, PROCESS_KEYS } = require('./getProcesses.js');
 const SearchInput = require('../search-input/SearchInput.js');
 const ProcessHeader = require('./process-header/ProcessHeader.js');
 const ProcessData = require('./process-data/ProcessData.js');
 
 const R = require('ramda');
-const React = require('react'),
-      ReactDOM = require('react-dom');
+const React = require('react');
+const ReactDOM = require('react-dom');
 
 /**
  * Return <objects> whose values of <prop> don't include <searchQuery>.
@@ -31,6 +30,29 @@ const rejectPropMatches = R.curryN(4, (prop, searchQuery, transform, objects) =>
     return _rejectPropMatches(objects);
 });
 
+/**
+ * Apply <fn> to each table row element whose PID matches the <procObjs> pids.
+ * @param {Array[Object]} procObjs - Array of process objects.
+ * @param {Function} fn - Applied to each table row node with a matching `pid` prop.
+ */
+function givenEachProcAsTableRow(procObjs, fn)
+{
+    // [...<iterable>] converts some iterable to an array.
+    [...document.getElementsByClassName('css-process-data')].forEach(procDataTableRowNode =>
+    {
+        // Relies on the `pid` property being second in the list.
+        const procDataTableRowNodePID = procDataTableRowNode.childNodes[1].textContent;
+
+        procObjs.forEach(procObj =>
+        {
+            if (procDataTableRowNodePID == procObj.pid) // Solves a Number vs. String issue.
+            {
+                fn(procDataTableRowNode, procObj);
+            }
+        });
+    });
+}
+
 class Processes extends React.Component
 {
     constructor(props)
@@ -41,7 +63,11 @@ class Processes extends React.Component
         this.hiddenProcessDataClass = 'hidden';
         this.noDisplayProcessDataClass = 'no-display';
 
-        this.state = { processes: [] };
+        this.state = {
+            processes: [],
+            keyToSortBy: 'memoryUsage',
+            doReverseOrder: true
+        };
     }
 
     /**
@@ -64,34 +90,6 @@ class Processes extends React.Component
         this.setState({ processes: procsWithInsertedProcs });
     }
 
-    /**
-     * Call the given function on each table row node (process) whose PID matches
-     * the <procsToMatch> pids.
-     * @param {Array[Object]} procsToMatch - Array of process objects.
-     * @param {Function} func - Applied to each process row node with a matching `pid` prop.
-     * @private
-     */
-    _getProcessDataRowNodes(procsToMatch, func)
-    {
-        // <procRowNodes> is this.state.processes as HTML elements/nodes.
-        // TODO: How do I do this equivalent with React?
-        const procRowNodes = document.getElementsByClassName('css-process-data');
-
-        // [...<iterable>] converts some <iterable> to an array.
-        [...procRowNodes].forEach(procRowNode =>
-        {
-            // Relies on `pid` property being second in the list.
-            const pid = procRowNode.childNodes[1].textContent;
-
-            procsToMatch.forEach(procToMatch =>
-            {
-                if (pid == procToMatch.pid)
-                {
-                    func(procRowNode, procToMatch);
-                }
-            });
-        });
-    }
 
     /**
      * Given a process, check if that table row node (process) has the
@@ -101,14 +99,14 @@ class Processes extends React.Component
      */
     processIsHidden(proc)
     {
-        let procsAreHidden = false;
+        let procIsHidden = false;
 
-        this._getProcessDataRowNodes([ proc ], (procRowNode) =>
+        givenEachProcAsTableRow([ proc ], (procRowNode) =>
         {
-            procsAreHidden = procRowNode.classList.contains(this.hiddenProcessDataClass);
+            procIsHidden = procRowNode.classList.contains(this.hiddenProcessDataClass);
         });
 
-        return procsAreHidden;
+        return procIsHidden;
     }
 
     /**
@@ -117,7 +115,7 @@ class Processes extends React.Component
      */
     hideProcesses(procsToHide)
     {
-        this._getProcessDataRowNodes(procsToHide, (procRowNode) =>
+        givenEachProcAsTableRow(procsToHide, (procRowNode) =>
         {
             procRowNode.classList.add(this.hiddenProcessDataClass);
         });
@@ -129,7 +127,7 @@ class Processes extends React.Component
      */
     unhideProcesses(procsToUnhide)
     {
-        this._getProcessDataRowNodes(procsToUnhide, (procRowNode) =>
+        givenEachProcAsTableRow(procsToUnhide, (procRowNode) =>
         {
             procRowNode.classList.remove(this.hiddenProcessDataClass);
         });
@@ -148,14 +146,17 @@ class Processes extends React.Component
      * Given the name of a process, if there is more than one occurrence of that
      * process, create and return a custom process object from the combination
      * of all processes of that name (mostly just combines the memory usage nums).
-     * @param {Object} processName - A process object.
+     * @param {Object} process - A process object.
      * @returns {Object} - A summarized "super" process.
      */
     getSummatedProcess(process)
     {
-        const sameNameProcs = this.getSameNameProcesses(process.name);
+        const sameNameProcs = this.getSameNameProcesses(process);
 
-        if (sameNameProcs.length === 1) { return sameNameProcs[0]; }
+        if (sameNameProcs.length === 1)
+        {
+            return sameNameProcs[0];
+        }
 
         return {
             name: `${process.name}* [${sameNameProcs.length}]`,
@@ -167,31 +168,32 @@ class Processes extends React.Component
     /** Sort procs by memUse by default. */
     componentDidMount()
     {
-        this.setState({ processes: getProcesses() }, () =>
+        this.setState({ processes: getProcessesSync() }, () =>
         {
-            const doSortFromLastToFirst = true;
-
-            this.sortProcesses('memoryUsage', doSortFromLastToFirst);
+            this.sortProcesses();
         });
     }
 
     /**
-     * sortProcesses and update <processes> sorted by a key, <keyToSortBy>.
+     * sortProcesses and update state based on received arguments
+     * This.state.processes are sorted by a key, <keyToSortBy>.
      * @param {String} keyToSortBy - Key of a <process> obj to sortProcesses by.
-     * @param {Boolean} doReverseOrder - If true, then sort descending.
+     * @param {Boolean} doReverseOrder - If true, then sort ascending.
      * @returns sortedProcesses - The given <processes> sorted by <keyToSortBy>.
      */
     sortProcesses(keyToSortBy, doReverseOrder)
     {
-        const sortValue = this.state.processes[0][keyToSortBy];
-        const ifSortValueIsString = R.partial(R.is(String), [sortValue]);
+        keyToSortBy = keyToSortBy || this.state.keyToSortBy;
+        doReverseOrder = doReverseOrder || this.state.doReverseOrder;
 
+        const sortValue = this.state.processes[0][keyToSortBy];
+        const ifSortValueIsStringFunc = R.partial(R.is(String), [sortValue]);
         const reverseOrNot = doReverseOrder ? R.reverse : R.identity;
 
         const getProcessesSortedByKey = R.pipe(
             R.sortBy(
                 R.ifElse(
-                    ifSortValueIsString,
+                    ifSortValueIsStringFunc,
                     R.pipe(R.prop(keyToSortBy), R.toLower),
                     R.prop(keyToSortBy)
                 )
@@ -199,8 +201,12 @@ class Processes extends React.Component
             reverseOrNot
         );
 
-        const sortedProcs = getProcessesSortedByKey(this.state.processes);
-        this.setState({ processes: sortedProcs });
+        // Cache the result of the sort in this.state and update state.
+        this.setState({
+            processes: getProcessesSortedByKey(this.state.processes),
+            keyToSortBy,
+            doReverseOrder: !doReverseOrder
+        });
     }
 
     /**
@@ -209,7 +215,7 @@ class Processes extends React.Component
      */
     redisplayAllProcs()
     {
-        this._getProcessDataRowNodes(this.state.processes, procRowNode =>
+        givenEachProcAsTableRow(this.state.processes, procRowNode =>
         {
             procRowNode.classList.remove(this.noDisplayProcessDataClass);
         });
@@ -218,35 +224,31 @@ class Processes extends React.Component
     /**
      * When user searches for processes by name (string) or pid (number), add a class to the procs
      * that don't match that query which sets their `display: none` in css (see ./_Processes.scss).
-     * @param {Object} event - keyboardEvent fired on the <input> element -> gives <searchQuery>.
+     * @param {Object} event - keyboardEvent fired on the <input> element produces <searchQuery>.
      */
     searchProcesses(event)
     {
-        // <searchQuery> is $('input').val();
         const searchQuery = event.target.value;
+        const procs = this.state.processes;
 
         if (searchQuery.length === 0)
         {
-            // Unhide all processes.
-            this.redisplayAllProcs();
+            this.redisplayAllProcs(); // Unhide all processes.
         }
         else if (isNaN(searchQuery) && typeof searchQuery === 'string')
         {
-            const procsNotMatchingQuery = rejectPropMatches(
-                'name', searchQuery, R.toLower, this.state.processes);
-
+            const procsNotMatchingQuery = rejectPropMatches('name', searchQuery, R.toLower, procs);
             this._hideProcDataNodes(procsNotMatchingQuery);
         }
         else if (Number.isInteger(Number(searchQuery)))
         {
-            const procsNotMatchingQuery = rejectPropMatches(
-                'pid', Number(searchQuery), R.toString, this.state.processes);
 
+            const procsNotMatchingQuery = rejectPropMatches('pid', Number(searchQuery), R.toString, procs);
             this._hideProcDataNodes(procsNotMatchingQuery);
         }
         else
         {
-            throw new Error('searchQuery is invalid');
+            throw new TypeError('searchQuery is invalid');
         }
 
     }
@@ -258,7 +260,7 @@ class Processes extends React.Component
      */
     _hideProcDataNodes(doNotDisplayTheseProcs)
     {
-        this._getProcessDataRowNodes(doNotDisplayTheseProcs, (procRowNode) =>
+        givenEachProcAsTableRow(doNotDisplayTheseProcs, (procRowNode) =>
         {
             procRowNode.classList.add(this.noDisplayProcessDataClass);
         });
@@ -272,9 +274,8 @@ class Processes extends React.Component
     validateShowTopNProcessesInput(value)
     {
         const characters = R.split('', value);
-        const isNumber = R.match(/\d/);
-
-        return R.all(isNumber, characters);
+        const isNum = R.match(/\d/);
+        return R.all(isNum, characters)
     }
 
     /**
@@ -284,7 +285,7 @@ class Processes extends React.Component
      */
     showTopNProcesses(event)
     {
-        const numberOfProcsToDisplay = event.target.value;
+        const numberOfProcsToDisplay = Number(event.target.value);
 
         this.redisplayAllProcs();
 
@@ -295,19 +296,13 @@ class Processes extends React.Component
         }
     }
 
-    /**
-     * Grab a fresh batch of processes from getProcesses.js.
-     * Updates state.
-     * TODO
-     */
     refreshProcesses()
     {
-        // this.setState({ processes: [] });
-
-        // this.setState({ processes: getProcesses() }, () =>
-        // {
-        //     this.sortProcesses('memoryUsage', true);
-        // });
+        getProcessesAsync().done(procs => {
+            this.setState({ processes: procs }, () => {
+                this.sortProcesses(this.state.keyToSortBy, !this.state.doReverseOrder);
+            });
+        });
     }
 
     /**
@@ -366,7 +361,7 @@ class Processes extends React.Component
                 </i>
 
                 <span className='css-process-number'>
-                    {this.state.processes.length + ' Processes listed'}
+                    {this.state.processes.length + ' Processes'}
                 </span>
 
                 <SearchInput

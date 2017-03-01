@@ -2,6 +2,7 @@
 
 const { PROCESS_KEYS } = require('../getProcesses.js');
 
+const R = require('ramda');
 const React = require('react');
 
 class ProcessHeader extends React.Component
@@ -11,15 +12,16 @@ class ProcessHeader extends React.Component
         super(props);
 
         this.prettyTitles = [ 'Name', 'Process ID', 'Memory Usage' ];
+        this.doReverseSort = true;
+        this.cssClass = 'css-process-header';
     }
 
     /**
      * Private method that given a key of a <process>, returns a title (string).
-     * @param {String} processKey 
+     * @param {String} processKey
      * @returns {String} - Example: 'memoryUsage' -> 'Memory Usage'
-     * @private
      */
-    _getPrettyTitleFromKey(processKey)
+    getPrettyTitleFromKey(processKey)
     {
         // Dependent on ordering of <PROCESS_KEYS> found in getProcesses.js
         return this.prettyTitles[PROCESS_KEYS.indexOf(processKey)];
@@ -33,6 +35,11 @@ class ProcessHeader extends React.Component
     {
         const processKeyToSortProcessesBy = event.target.id;
 
+        if (!R.contains(processKeyToSortProcessesBy, PROCESS_KEYS))
+        {
+            throw new Error('processKeyToSortProcessesBy not contained in PROCESS_KEYS');
+        }
+
         this.props.sortProcesses(
             processKeyToSortProcessesBy,
             this.doReverseSort
@@ -44,11 +51,11 @@ class ProcessHeader extends React.Component
     render()
     {
         return (
-            <th className='css-process-header'
+            <th className={this.cssClass}
                 onClick={this.handleLeftClick.bind(this)}
                 id={this.props.procKey}
             >
-                {this._getPrettyTitleFromKey(this.props.procKey)}
+                {this.getPrettyTitleFromKey(this.props.procKey)}
             </th>
         );
     }
