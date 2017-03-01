@@ -1,23 +1,24 @@
 'use strict';
 
-const CP = require('child_process');
+/* eslint-disable */
 
-const defaultFunc = function(error, stdout, stderr)
-{
-    if (error)
-    {
-        console.error(`exec error: ${error}`);
-        return;
-    }
-    else if (stdout)
-    {
-        console.log('stdout is:', stdout);
-    }
-    else if (stderr)
-    {
-        console.log('stderr is:', stderr);
-    }
-};
+const child_process = require('child_process');
+
+// const defaultFunc = function(error, stdout, stderr)
+// {
+//     if (error)
+//     {
+//         console.error(`exec error: ${error}`);
+//     }
+//     else if (stdout)
+//     {
+//         console.log('stdout is:', stdout);
+//     }
+//     else if (stderr)
+//     {
+//         console.log('stderr is:', stderr);
+//     }
+// };
 
 /**
  * Wrapper around CP.exec().
@@ -25,21 +26,17 @@ const defaultFunc = function(error, stdout, stderr)
  * @param {Array} processes - A list of process objects.
  * @param {Function} func - Callback - TODO: Am I going to use this??.
  */
-function killProcesses(processes, func)
+function killProcesses(procs, fn)
 {
-    const pids = processes.map(p => p.pid);
+    const pids = R.pluck('pid', procs);
 
+    // TODO: Do in one line with functions (reduce?).
     let command = `taskkill`;
-
-    pids.forEach(pid =>
-    {
-        command += ` /pid ${pid}`;
-    });
+    pids.forEach(pid => { command += ` /pid ${pid}`; });
 
     const options = { encoding: 'utf8' };
 
-    console.warn('killProcesses.js -> Killing processes is not implemented. See README.md');
-    // CP.exec(command, options, func || defaultFunc);
+    // return q.nfcall(child_process.exec, command, options, fn);
 }
 
 module.exports = killProcesses;

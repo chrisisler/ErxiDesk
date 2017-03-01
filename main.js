@@ -10,7 +10,7 @@ process.on('uncaughtException', (error) =>
     process.exit(1);
 });
 
-const {app, BrowserWindow} = require('electron');
+const { app, BrowserWindow } = require('electron');
 
 // Global reference to the (main) window object.
 let mainWindow = null;
@@ -25,11 +25,11 @@ const WINDOW_DEFAULT_HEIGHT = 900;
  */
 function createWindow()
 {
+    /* eslint-disable no-unused-vars */
     const Url = require('url');
     const Path = require('path');
 
-    const windowOptions =
-    {
+    const windowOptions = {
         minWidth: WINDOW_MIN_WIDTH,
         minHeight: WINDOW_MIN_HEIGHT,
         width: WINDOW_DEFAULT_WIDTH,

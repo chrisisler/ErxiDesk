@@ -4,7 +4,6 @@ const { PROCESS_KEYS, memUseToNum, memUseToStr, pidToNum } = require('../getProc
 
 const killProcesses = require('../killProcesses.js');
 const Dropdown = require('../../dropdown/Dropdown.js');
-const Processes = require('../Processes.js');
 
 const R = require('ramda');
 const React = require('react');
@@ -32,7 +31,8 @@ class ProcessData extends React.Component
         // const proc = R.pipe(memUseToNum, pidToNum).call(this, R.zipObj(PROCESS_KEYS, procValues));
         const proc = memUseToNum(pidToNum(R.zipObj(PROCESS_KEYS, procValues)));
 
-        const x = event.pageX, y = event.pageY;
+        const x = event.pageX;
+        const y = event.pageY;
         const dropdown = <Dropdown actions={this.getDropdownActions(proc)} x={x} y={y} />;
 
         ReactDOM.render(dropdown, document.getElementById('dropdown'));

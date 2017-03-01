@@ -30,7 +30,8 @@ const splitAtEOL = R.split(OS.EOL);
  * @param {Array[*]} array - The array.
  * @return {Array[*]} - A new array with the elements swapped.
  */
-const swapIndexes = R.curryN(3, (index1, index2, array) => {
+const swapIndexes = R.curryN(3, (index1, index2, array) =>
+{
     const element = array[index1];
     const arrayWithoutElement = R.without([ element ], array);
     return R.insert(index2, element, arrayWithoutElement);
@@ -171,7 +172,8 @@ function __getProcesses(doAsync, windowsProcessOutputSanitizer, nonWindowsProces
 const getProcessesSync = () => __getProcesses(false, windowsProcessOutputSanitizer, nonWindowsProcessOutputSanitizer);
 const getProcessesAsync = () => __getProcesses(true, windowsProcessOutputSanitizer, nonWindowsProcessOutputSanitizer);
 
-module.exports = {
+module.exports =
+{
     mapProp,
     getProcessesAsync,
     getProcessesSync,

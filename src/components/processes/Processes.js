@@ -1,13 +1,13 @@
 'use strict';
 
 const { getProcessesSync, getProcessesAsync, PROCESS_KEYS } = require('./getProcesses.js');
+/* eslint-disable no-unused-vars */
 const SearchInput = require('../search-input/SearchInput.js');
 const ProcessHeader = require('./process-header/ProcessHeader.js');
 const ProcessData = require('./process-data/ProcessData.js');
 
 const R = require('ramda');
 const React = require('react');
-const ReactDOM = require('react-dom');
 
 /**
  * Return <objects> whose values of <prop> don't include <searchQuery>.
@@ -19,7 +19,8 @@ const ReactDOM = require('react-dom');
  * @param {Array[Object]} objects - List of elements to filter through.
  * @returns {Array[Object]} - <objects> with <prop> whose value does NOT contain <searchQuery>.
  */
-const rejectPropMatches = R.curryN(4, (prop, searchQuery, transform, objects) => {
+const rejectPropMatches = R.curryN(4, (prop, searchQuery, transform, objects) =>
+{
     const _rejectPropMatches = R.reject(
         R.pipe(
             R.prop(prop),
@@ -161,7 +162,7 @@ class Processes extends React.Component
         return {
             name: `${process.name}* [${sameNameProcs.length}]`,
             pid: 0,
-            memoryUsage: R.sum(sameNameProcs.map(p => p.memoryUsage))
+            memoryUsage: R.sum(R.pluck('memoryUsasge', sameNameProcs))
         };
     }
 
@@ -275,7 +276,7 @@ class Processes extends React.Component
     {
         const characters = R.split('', value);
         const isNum = R.match(/\d/);
-        return R.all(isNum, characters)
+        return R.all(isNum, characters);
     }
 
     /**
@@ -298,8 +299,10 @@ class Processes extends React.Component
 
     refreshProcesses()
     {
-        getProcessesAsync().done(procs => {
-            this.setState({ processes: procs }, () => {
+        getProcessesAsync().done(procs =>
+        {
+            this.setState({ processes: procs }, () =>
+            {
                 this.sortProcesses(this.state.keyToSortBy, !this.state.doReverseOrder);
             });
         });

@@ -1,5 +1,3 @@
-const webpack = require('webpack');
-
 module.exports =
 {
     context: __dirname + '/src',
@@ -22,7 +20,7 @@ module.exports =
     output:
     {
         path: __dirname + '/src',
-        filename: "index.min.js"
+        filename: 'index.min.js'
     },
     plugins: [],
     target: 'electron'

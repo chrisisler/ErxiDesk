@@ -1,7 +1,6 @@
 'use strict';
 
-const React = require('react'),
-      ReactDOM = require('react-dom');
+const React = require('react');
 
 class SearchInput extends React.Component
 {

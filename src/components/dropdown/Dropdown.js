@@ -32,7 +32,6 @@ const ReactDOM = require('react-dom');
 
 // For this.state.visibility -- it's CSS.
 const on  = 'visible';
-const off = 'hidden';
 
 class Dropdown extends React.Component
 {
@@ -139,7 +138,6 @@ class Dropdown extends React.Component
 
     hideDropdown()
     {
-        // this.setState({ visibility: off });
         ReactDOM.unmountComponentAtNode(document.getElementById('dropdown'));
     }
 
@@ -150,7 +148,8 @@ class Dropdown extends React.Component
     handleClick(triggers)
     {
         this.hideDropdown();
-        triggers.forEach(trigger => {
+        triggers.forEach(trigger =>
+        {
             trigger();
         });
     }
@@ -222,14 +221,16 @@ module.exports = Dropdown;
  */
 function _getWindowHeight()
 {
-    const body = document.body,
-          html = document.documentElement;
+    const body = document.body;
+    const html = document.documentElement;
 
     return Math.max(
         body.scrollHeight,
         body.offsetHeight,
+
         html.scrollHeight,
         html.offsetHeight,
+
         html.clientHeight
     );
 }
