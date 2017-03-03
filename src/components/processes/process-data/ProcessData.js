@@ -2,7 +2,6 @@
 
 const { PROCESS_KEYS, memUseToNum, memUseToStr, pidToNum } = require('../getProcesses.js');
 
-const killProcesses = require('../killProcesses.js');
 const Dropdown = require('../../dropdown/Dropdown.js');
 
 const R = require('ramda');
@@ -55,11 +54,11 @@ class ProcessData extends React.Component
         // in the second argument of Dropdown.newAction. This allows the
         // code in Dropdown.js to be unaware of the arguments needed per function.
         // R.partial requires args as a list. Calling a partial'ed func returns a func.
-        const _killProcs   = R.partial(killProcesses);
-        const _hideProcs   = R.partial(this.props.hideProcesses);
-        const _unhideProcs = R.partial(this.props.unhideProcesses);
-        const _removeProcs = R.partial(this.props.removeProcesses);
-        const _insertProcs = R.partial(this.props.insertProcesses);
+        const _kill   = R.partial(this.props.killProcesses);
+        const _hide   = R.partial(this.props.hideProcesses);
+        const _unhide = R.partial(this.props.unhideProcesses);
+        const _remove = R.partial(this.props.removeProcesses);
+        const _insert = R.partial(this.props.insertProcesses);
 
         const oneProcMsg = `"${proc.name}" (PID: ${proc.pid})`;
 
@@ -67,25 +66,20 @@ class ProcessData extends React.Component
         let actions = [];
 
         actions.push(
-            Dropdown.newAction(`Kill ${oneProcMsg}`, [
-                _killProcs([[proc]]),
-                _removeProcs([[proc]])
-            ]),
-
-            Dropdown.newAction(`Remove ${oneProcMsg}`, _removeProcs([[proc]])),
+            Dropdown.newAction(`Kill ${oneProcMsg}`, [ _kill([[proc]]), _remove([[proc]]) ]),
+            Dropdown.newAction(`Remove ${oneProcMsg}`, _remove([[proc]])),
 
             // Add an action to hide or unhide the process based on if it is hidden or not.
             Dropdown.newAction(`${hideOrUnhideText} ${oneProcMsg}`,
-                procIsNotHidden ? _hideProcs([[proc]]) : _unhideProcs([[proc]])
+                procIsNotHidden ? _hide([[proc]]) : _unhide([[proc]])
             )
         );
-
         const sameNameProcs = this.props.getSameNameProcesses(proc);
-        const numSameNameProcs = sameNameProcs.length;
+        const numberOfSameNameProcs = sameNameProcs.length;
 
-        if (numSameNameProcs > 1)
+        if (numberOfSameNameProcs > 1)
         {
-            const bothOrAllN = numSameNameProcs === 2 ? 'both' : `all ${numSameNameProcs}`;
+            const bothOrAllN = numberOfSameNameProcs === 2 ? 'both' : `all ${numberOfSameNameProcs}`;
             const multiProcMsg = `${bothOrAllN} "${proc.name}" processes`;
             const divider = Dropdown.makeDivider();
 
@@ -94,24 +88,24 @@ class ProcessData extends React.Component
 
                 // Add a dropdown action to kill all procs with this name.
                 Dropdown.newAction(`Kill ${multiProcMsg}`, [
-                    _killProcs([ sameNameProcs ]),
-                    _removeProcs([ sameNameProcs ])
+                    _kill([sameNameProcs]),
+                    _remove([sameNameProcs])
                 ]),
 
                 // Add an action to not show all procs with this name.
-                Dropdown.newAction(`Remove ${multiProcMsg}`, _removeProcs([sameNameProcs])),
+                Dropdown.newAction(`Remove ${multiProcMsg}`, _remove([sameNameProcs])),
 
                 // Add an action to hide or unhide procs of this name if they're hidden or not.
                 Dropdown.newAction(`${hideOrUnhideText} ${multiProcMsg}`,
-                    procIsNotHidden ? _hideProcs([sameNameProcs]) : _unhideProcs([sameNameProcs])
+                    procIsNotHidden ? _hide([sameNameProcs]) : _unhide([sameNameProcs])
                 ),
 
                 divider,
 
                 // Add a dropdown action to summarize this process.
                 Dropdown.newAction(`Summate ${multiProcMsg}`, [
-                    _insertProcs([[this.props.getSummatedProcess(proc)]]),
-                    _removeProcs([ sameNameProcs ])
+                    _insert([[this.props.getSummatedProcess(proc)]]),
+                    _remove([sameNameProcs])
                 ])
             );
         }
@@ -153,7 +147,8 @@ ProcessData.propTypes = {
     insertProcesses:        React.PropTypes.func.isRequired,
     hideProcesses:          React.PropTypes.func.isRequired,
     unhideProcesses:        React.PropTypes.func.isRequired,
-    processIsHidden:        React.PropTypes.func.isRequired
+    processIsHidden:        React.PropTypes.func.isRequired,
+    killProcesses:          React.PropTypes.func.isRequired
 };
 
 ProcessData.defaultProps = {
@@ -164,7 +159,8 @@ ProcessData.defaultProps = {
     insertProcesses:        function() {},
     hideProcesses:          function() {},
     unhideProcesses:        function() {},
-    processIsHidden:        function() {}
+    processIsHidden:        function() {},
+    killProcesses:          function() {}
 };
 
 module.exports = ProcessData;

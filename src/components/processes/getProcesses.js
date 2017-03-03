@@ -88,7 +88,7 @@ const windowsProcessOutputSanitizer = R.pipe(
     splitAtEOL,
     R.map(
         R.pipe(
-            // Input: '"foo", "bar"'
+            // Input: '"foo", "bar"' (a CSV-like format)
             // Output: [ 'foo', 'bar' ]
             str => JSON.parse(`[${str}]`),
 

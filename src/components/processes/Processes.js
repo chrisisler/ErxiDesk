@@ -1,7 +1,8 @@
 'use strict';
 
+const _killProcesses = require('./killProcesses.js');
 const { getProcessesSync, getProcessesAsync, PROCESS_KEYS } = require('./getProcesses.js');
-/* eslint-disable no-unused-vars */
+
 const SearchInput = require('../search-input/SearchInput.js');
 const ProcessHeader = require('./process-header/ProcessHeader.js');
 const ProcessData = require('./process-data/ProcessData.js');
@@ -78,7 +79,7 @@ class Processes extends React.Component
     removeProcesses(procsToRemove)
     {
         const procsWithRemovedProcs = R.without(procsToRemove, this.state.processes);
-        this.setState({ processes: procsWithRemovedProcs });
+        this.setState(() => ({ processes: procsWithRemovedProcs }));
     }
 
     /**
@@ -88,9 +89,39 @@ class Processes extends React.Component
     insertProcesses(procsToInsert)
     {
         const procsWithInsertedProcs = [...procsToInsert, ...this.state.processes];
-        this.setState({ processes: procsWithInsertedProcs });
+        this.setState(() => ({ processes: procsWithInsertedProcs }));
     }
 
+    killProcesses(procsToKill)
+    {
+        _killProcesses(procsToKill)
+            .then(() =>
+            {
+                this.refreshProcesses();
+            })
+            .then(() =>
+            {
+                this.removeProcesses(procsToKill);
+            })
+            .catch(error =>
+            {
+                throw error;
+            });
+    }
+
+    clearInputs()
+    {
+        const noValue = { value: '' };
+
+        if (this.searchProcessesInput.state.value !== '')
+        {
+            this.searchProcessesInput.setState(() => noValue);
+        }
+        if (this.showProcessesInput.state.value !== '')
+        {
+            this.showProcessesInput.setState(() => noValue);
+        }
+    }
 
     /**
      * Given a process, check if that table row node (process) has the
@@ -169,7 +200,7 @@ class Processes extends React.Component
     /** Sort procs by memUse by default. */
     componentDidMount()
     {
-        this.setState({ processes: getProcessesSync() }, () =>
+        this.setState(() => ({ processes: getProcessesSync() }), () =>
         {
             this.sortProcesses();
         });
@@ -203,11 +234,11 @@ class Processes extends React.Component
         );
 
         // Cache the result of the sort in this.state and update state.
-        this.setState({
+        this.setState(() => ({
             processes: getProcessesSortedByKey(this.state.processes),
             keyToSortBy,
             doReverseOrder: !doReverseOrder
-        });
+        }));
     }
 
     /**
@@ -299,13 +330,14 @@ class Processes extends React.Component
 
     refreshProcesses()
     {
-        getProcessesAsync().done(procs =>
+        getProcessesAsync().then(processes =>
         {
-            this.setState({ processes: procs }, () =>
+            this.setState(() => ({ processes }), () =>
             {
                 this.sortProcesses(this.state.keyToSortBy, !this.state.doReverseOrder);
+                this.clearInputs();
             });
-        });
+        }).done();
     }
 
     /**
@@ -342,6 +374,7 @@ class Processes extends React.Component
                 hideProcesses={this.hideProcesses.bind(this)}
                 unhideProcesses={this.unhideProcesses.bind(this)}
                 processIsHidden={this.processIsHidden.bind(this)}
+                killProcesses={this.killProcesses.bind(this)}
             />
         );
     }
@@ -354,6 +387,7 @@ class Processes extends React.Component
                     className='css-process-search'
                     placeholder='Search name/pid'
                     handleSearchQuery={this.searchProcesses.bind(this)}
+                    ref={input => this.searchProcessesInput = input}
                 />
 
                 <i
@@ -372,6 +406,7 @@ class Processes extends React.Component
                     placeholder='Show # processes'
                     handleSearchQuery={this.showTopNProcesses.bind(this)}
                     validateInput={this.validateShowTopNProcessesInput.bind(this)}
+                    ref={input => this.showProcessesInput = input}
                 />
             </div>
         );

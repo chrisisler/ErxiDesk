@@ -1,43 +1,30 @@
 'use strict';
 
-/* eslint-disable */
-
-const child_process = require('child_process');
-
-// const defaultFunc = function(error, stdout, stderr)
-// {
-//     if (error)
-//     {
-//         console.error(`exec error: ${error}`);
-//     }
-//     else if (stdout)
-//     {
-//         console.log('stdout is:', stdout);
-//     }
-//     else if (stderr)
-//     {
-//         console.log('stderr is:', stderr);
-//     }
-// };
+const q = require('q');
 
 /**
- * Wrapper around CP.exec().
- * Given an array of process IDs attempt to kill all those processes.
- * @param {Array} processes - A list of process objects.
- * @param {Function} func - Callback - TODO: Am I going to use this??.
+ * Kill (or send <signal> to) every process in the given list.
+ * @param {Array[Object]} procs - List of processes.
+ * @param {String} signal - Like 'SIGTERM', or similar.
+ * @returns {Promise}
  */
-function killProcesses(procs, fn)
+module.exports = function killProcesses(procs, signal)
 {
-    const pids = R.pluck('pid', procs);
-
-    // TODO: Do in one line with functions (reduce?).
-    let command = `taskkill`;
-    pids.forEach(pid => { command += ` /pid ${pid}`; });
-
-    const options = { encoding: 'utf8' };
-
-    // return q.nfcall(child_process.exec, command, options, fn);
-}
-
-module.exports = killProcesses;
-
+    return q().then(() =>
+    {
+        try
+        {
+            procs.forEach(proc =>
+            {
+                process.kill(proc.pid, signal || 'SIGTERM');
+            });
+        }
+        catch (error)
+        {
+            if (error.code !== 'ESRCH')
+            {
+                throw error;
+            }
+        }
+    });
+};

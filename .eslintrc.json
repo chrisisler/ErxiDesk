@@ -42,13 +42,6 @@
             2,
             "never"
         ],
-        "no-unused-vars": [
-            2,
-            {
-                "vars": "all",
-                "args": "none"
-            }
-        ],
         "no-trailing-spaces": 2,
         "eol-last": 2,
         "indent": [

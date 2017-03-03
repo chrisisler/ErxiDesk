@@ -164,7 +164,7 @@ class Dropdown extends React.Component
      */
     renderActions(_actions)
     {
-        return _actions.map((action, index, array) =>
+        return _actions.map((action, index) =>
         {
             if (action.text === this.dividerClass)
             {
