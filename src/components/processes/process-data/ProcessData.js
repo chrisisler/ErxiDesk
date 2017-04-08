@@ -1,12 +1,31 @@
 'use strict';
 
-const { PROCESS_KEYS, memUseToNum, memUseToStr, pidToNum } = require('../getProcesses.js');
+const { PROCESS_KEYS, memUseToNum, mapProp, pidToNum } = require('../getProcesses.js');
 
 const Dropdown = require('../../dropdown/Dropdown.js');
 
 const R = require('ramda');
 const React = require('react');
 const ReactDOM = require('react-dom');
+
+/**
+ * @example 87108 -> '87,108 K'
+ * @param {Object} - A processData object.
+ * @returns {Object} - Object with memoryUsage prop as a String.
+ */
+const memUseToStr = mapProp('memoryUsage', R.pipe(
+    R.unless(R.is(String), R.toString),
+    R.reverse,
+    R.splitEvery(3), R.flatten, R.join(','),
+    R.reverse,
+    R.concat(R.__, ' K')
+));
+
+/**
+ * Input: { pid: "7322", memoryUsage: "37111" }
+ * Output: { pid: 7322, memoryUsage: 37111 }
+ */
+const pidAndMemUseToNum = R.pipe(memUseToNum, pidToNum);
 
 class ProcessData extends React.Component
 {
@@ -26,9 +45,7 @@ class ProcessData extends React.Component
         const procValues = [...event.target.parentNode.childNodes].map(x => x.textContent);
 
         // Rebuild a process object by zipping obj keys with values taken from the event.
-        // pid and memoryUsage, when taken from HTML are strings, convert those to Numbers.
-        // const proc = R.pipe(memUseToNum, pidToNum).call(this, R.zipObj(PROCESS_KEYS, procValues));
-        const proc = memUseToNum(pidToNum(R.zipObj(PROCESS_KEYS, procValues)));
+        const proc = pidAndMemUseToNum(R.zipObj(PROCESS_KEYS, procValues));
 
         const x = event.pageX;
         const y = event.pageY;

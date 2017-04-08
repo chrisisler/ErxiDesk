@@ -3,11 +3,11 @@
 div.css-dropdown-wrap
 {
     position: absolute;
-    border: 1px solid $base01;
+    // border: 1px solid $base01;
 
     ul
     {
-        @extend .z-depth-2;
+        @extend .z-depth-3;
 
         color: $base3;
         background-color: $base02;

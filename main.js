@@ -35,6 +35,7 @@ function createWindow()
         width: WINDOW_DEFAULT_WIDTH,
         height: WINDOW_DEFAULT_HEIGHT,
         autoHideMenuBar: true,
+        icon: './assets/favicon-64px-64px.png',
         title: 'ErxiDesk'
     };
 

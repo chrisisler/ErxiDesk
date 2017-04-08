@@ -30,7 +30,7 @@ const splitAtEOL = R.split(OS.EOL);
  * @param {Array[*]} array - The array.
  * @return {Array[*]} - A new array with the elements swapped.
  */
-const swapIndexes = R.curryN(3, (index1, index2, array) =>
+const swapIndexes = R.curry((index1, index2, array) =>
 {
     const element = array[index1];
     const arrayWithoutElement = R.without([ element ], array);
@@ -46,7 +46,7 @@ const swapIndexes = R.curryN(3, (index1, index2, array) =>
  * @param {Object} obj - Object to alter.
  * @returns {Object} - Returns the given object after calling <fn> on <prop>.
  */
-const mapProp = R.curryN(3, (prop, fn, obj) => R.over(R.lensProp(prop), fn, obj));
+const mapProp = R.curry((prop, fn, obj) => R.over(R.lensProp(prop), fn, obj));
 
 /**
  * Return the given process object with its <memoryUsage> prop as a Number.
@@ -61,50 +61,27 @@ const memUseToNum = mapProp('memoryUsage', R.pipe(
 ));
 
 /**
- * Not used in ./getProcess.js, only exported for external use.
- * @example 87108 -> '87,108 K'
- * @param {Object} - A processData object.
- * @returns {Object} - Object with memoryUsage prop as a String.
- */
-const memUseToStr = mapProp('memoryUsage', R.pipe(
-    R.unless(R.is(String), R.toString),
-    R.reverse,
-    R.splitEvery(3), R.flatten, R.join(','),
-    R.reverse,
-    R.concat(R.__, ' K')
-));
-
-/**
  * Return the given process object with its <pid> prop as a Number.
  * @param {Object} obj - A process obj.
  * @returns {Object} - A copy of the given object with <pid> prop as a Number
  */
 const pidToNum = mapProp('pid', Number);
 
-// Manipulatees the output from `tasklist` to a list of objects.
+// Manipulatees the output from `tasklist` to output a list of objects.
 const windowsProcessOutputSanitizer = R.pipe(
-    // Input: String - CRLF delimited.
-    // Output Array[Object]
     splitAtEOL,
     R.map(
         R.pipe(
-            // Input: '"foo", "bar"' (a CSV-like format)
-            // Output: [ 'foo', 'bar' ]
             str => JSON.parse(`[${str}]`),
-
             R.zipObj([ 'name', 'pid', 'sessionName', 'sessionNumber', 'memoryUsage' ]),
-
-            // Convert PID prop of all objs from string to Number.
             pidToNum,
-
-            // Only retain the props of the given obj that are included in PROCESS_KEYS.
             R.pick(PROCESS_KEYS)
         )
     ),
-    // For some reasong, some objs have falsy memuse which throws an error. Remove those.
-    R.filter(R.prop('memoryUsage')),
-
-    // Convert memoryUsage prop to Number and remove ".exe" from name if applicable.
+    // For some reason, some objs have falsy memUse which throws an error. Remove those.
+    R.filter(
+        R.pipe(R.prop('memoryUsage'), Boolean)
+    ),
     R.map(
         R.pipe(
             memUseToNum,
@@ -122,24 +99,15 @@ const windowsProcessOutputSanitizer = R.pipe(
  * @returns {Array[Object]} - Array of process objects.
  */
 const nonWindowsProcessOutputSanitizer = R.pipe(
-    // Input: String - output from `ps` command.
-    // Output: Array[String]
     splitAtEOL,
     R.map(
         R.pipe(
             R.trim,
             R.replace(/\s+/g, '--'),
             R.split('--'),
-
-            // Rearrange element order to fit <PROCESS_KEYS> so we can use R.zipObj.
             swapIndexes(0, 2),
             swapIndexes(1, 2),
-
-            // Input: Array[String] - Values of process objects
-            // Output: Array[Object] - Process objects.
             R.zipObj(PROCESS_KEYS),
-
-            // Convert PID and memoryUsage to Numbers
             pidToNum,
             memUseToNum
         )
@@ -178,7 +146,6 @@ module.exports =
     getProcessesAsync,
     getProcessesSync,
     memUseToNum,
-    memUseToStr,
     PROCESS_KEYS,
     pidToNum
 };

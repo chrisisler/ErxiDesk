@@ -3,6 +3,7 @@
 const _killProcesses = require('./killProcesses.js');
 const { getProcessesSync, getProcessesAsync, PROCESS_KEYS } = require('./getProcesses.js');
 
+/* eslint-disable no-unused-vars */
 const SearchInput = require('../search-input/SearchInput.js');
 const ProcessHeader = require('./process-header/ProcessHeader.js');
 const ProcessData = require('./process-data/ProcessData.js');
@@ -94,6 +95,7 @@ class Processes extends React.Component
 
     killProcesses(procsToKill)
     {
+        // TODO: Is there a better way to do this?
         _killProcesses(procsToKill)
             .then(() =>
             {
@@ -328,6 +330,15 @@ class Processes extends React.Component
         }
     }
 
+    showNotification()
+    {
+        const ReactDOM = require('react-dom');
+        const Notification = require('../notification/Notification.js');
+
+        const notif = <Notification/>;
+        ReactDOM.render(notif, document.getElementById('notification'));
+    }
+
     refreshProcesses()
     {
         getProcessesAsync().then(processes =>
@@ -347,7 +358,8 @@ class Processes extends React.Component
      */
     renderProcessHeaders(PROCESS_KEYS)
     {
-        return PROCESS_KEYS.map((procKey, index, array) =>
+        /* eslint-disable no-unused-vars */
+        return PROCESS_KEYS.map((procKey, index) =>
             <ProcessHeader
                 key={index + ' ' + procKey}
                 procKey={procKey}
@@ -363,7 +375,8 @@ class Processes extends React.Component
      */
     renderProcessData(_processes)
     {
-        return _processes.map((proc, index, array) =>
+        /* eslint-disable no-unused-vars */
+        return _processes.map((proc, index) =>
             <ProcessData
                 key={index + ' ' + proc.memoryUsage}
                 processData={proc}
@@ -395,6 +408,12 @@ class Processes extends React.Component
                     onClick={this.refreshProcesses.bind(this)}
                 >
                     cached
+                </i>
+                <i
+                    className='material-icons css-process-refresh'
+                    onClick={this.showNotification.bind(this)}
+                >
+                    menu
                 </i>
 
                 <span className='css-process-number'>

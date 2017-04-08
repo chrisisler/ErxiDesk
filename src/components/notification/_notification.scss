@@ -1,0 +1,19 @@
+@charset "UTF-8";
+
+div.css-notification-wrap
+{
+    @extend .z-depth-3;
+    @include clickable($blue, $base3);
+
+    text-align: center;
+    width: 100%;
+    background-color: $base02;
+    color: $base2;
+    position: fixed;
+    bottom: 18px;
+
+    &:hover
+    {
+        cursor: pointer;
+    }
+}

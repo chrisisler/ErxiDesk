@@ -1,31 +1,19 @@
 # ErxiDesk
 
-A graphical user interface for common command-line tasks designed for personal use.
-
-## About
-
-ErxiDesk is a desktop app built with Electron and React.
-
-### Features
-- Display, start, and kill processes/applications (work in progress)
-- Manage files (to be done)
+ErxiDesk is a desktop GUI for process and file management built with React and Electron.
 
 ## Build
 - ```npm install```
 
 ## Run + Develop
-- ```sass --watch src/sass```
-- ```npm run dev```
-- ```npm start```
+- `sass --watch src/sass` (for sass)
+- `npm run dev`
+- `npm start`
 
 ## Roadmap
-- Add a visual notification to show process kill success or error
-
-- Add jsx-compatible tests
-- Fix table header and top-bar for processes
 - Add button at bottom of processes table to scroll back to top (unless already at top)
-- Add tabs/header
+- Switch from external sass --watch to node-sass (node-gyp is a big Windows problem?)
 
-### Deadline Range
+### Deadline
 
 I will stop working on ErxiDesk sometime between May 6 and Nov 6 to move forward with other projects.
