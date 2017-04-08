@@ -99,14 +99,16 @@ class Processes extends React.Component
         _killProcesses(procsToKill)
             .then(() =>
             {
-                this.refreshProcesses();
-            })
-            .then(() =>
-            {
                 this.removeProcesses(procsToKill);
+                this.refreshProcesses();
+
+                const len = procsToKill.length;
+                const oneOrMany = `${len} ${procsToKill[0].name} process${len > 1 ? 'es' : ''}.`;
+                this.showNotification(`Success: Killed ${oneOrMany}`);
             })
             .catch(error =>
             {
+                this.showNotification('Error:', error);
                 throw error;
             });
     }
@@ -114,15 +116,8 @@ class Processes extends React.Component
     clearInputs()
     {
         const noValue = { value: '' };
-
-        if (this.searchProcessesInput.state.value !== '')
-        {
-            this.searchProcessesInput.setState(() => noValue);
-        }
-        if (this.showProcessesInput.state.value !== '')
-        {
-            this.showProcessesInput.setState(() => noValue);
-        }
+        this.searchProcessesInput.setState(() => noValue);
+        this.showProcessesInput.setState(() => noValue);
     }
 
     /**
@@ -195,7 +190,7 @@ class Processes extends React.Component
         return {
             name: `${process.name}* [${sameNameProcs.length}]`,
             pid: 0,
-            memoryUsage: R.sum(R.pluck('memoryUsasge', sameNameProcs))
+            memoryUsage: R.sum(R.pluck('memoryUsage', sameNameProcs))
         };
     }
 
@@ -323,20 +318,19 @@ class Processes extends React.Component
 
         this.redisplayAllProcs();
 
-        if (numberOfProcsToDisplay.length > 0)
+        if (numberOfProcsToDisplay > 0)
         {
             const procsToHide = R.drop(numberOfProcsToDisplay, this.state.processes);
             this._hideProcDataNodes(procsToHide);
         }
     }
 
-    showNotification()
+    showNotification(text)
     {
         const ReactDOM = require('react-dom');
         const Notification = require('../notification/Notification.js');
 
-        const notif = <Notification/>;
-        ReactDOM.render(notif, document.getElementById('notification'));
+        ReactDOM.render(<Notification text={text}/>, document.getElementById('notification'));
     }
 
     refreshProcesses()
@@ -408,12 +402,6 @@ class Processes extends React.Component
                     onClick={this.refreshProcesses.bind(this)}
                 >
                     cached
-                </i>
-                <i
-                    className='material-icons css-process-refresh'
-                    onClick={this.showNotification.bind(this)}
-                >
-                    menu
                 </i>
 
                 <span className='css-process-number'>

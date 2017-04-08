@@ -60,7 +60,7 @@ class Dropdown extends React.Component
     static newAction(text, triggers)
     {
         // <triggers> may be a function or an array containing one function.
-        if (typeof triggers === typeof Function)
+        if (Object.prototype.toString.call(triggers) === '[object Function]')
         {
             triggers = [ triggers ];
         }
@@ -113,7 +113,7 @@ class Dropdown extends React.Component
         if (dropdownTotalX > windowWidth) { x -= 250; }
         if (dropdownTotalY > windowHeight) { y -= dropdownHeight; }
 
-        this.setState(Object.assign({}, this.state, {
+        this.setState(() => Object.assign({}, this.state, {
             visibility: on,
             left: x,
             top: y
@@ -148,6 +148,7 @@ class Dropdown extends React.Component
     handleClick(triggers)
     {
         this.hideDropdown();
+
         triggers.forEach(trigger =>
         {
             trigger();

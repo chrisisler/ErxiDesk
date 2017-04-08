@@ -12,7 +12,6 @@ ErxiDesk is a desktop GUI for process and file management built with React and E
 
 ## Roadmap
 - Add button at bottom of processes table to scroll back to top (unless already at top)
-- Switch from external sass --watch to node-sass (node-gyp is a big Windows problem?)
 
 ### Deadline
 

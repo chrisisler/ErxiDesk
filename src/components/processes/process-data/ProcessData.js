@@ -77,7 +77,7 @@ class ProcessData extends React.Component
         const _remove = R.partial(this.props.removeProcesses);
         const _insert = R.partial(this.props.insertProcesses);
 
-        const oneProcMsg = `"${proc.name}" (PID: ${proc.pid})`;
+        const oneProcMsg = `${proc.name} (PID: ${proc.pid})`;
 
         // The order the actions are pushed determines the order they are seen in.
         let actions = [];
